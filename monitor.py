@@ -1,42 +1,47 @@
-from pathlib import Path
 import json
+from pathlib import Path
 import ttkbootstrap as ttk
-from ttkbootstrap import PhotoImage, Text, StringVar, IntVar
 from ttkbootstrap.constants import *
 
 
 class EditableLabel(ttk.Label):
-    def __init__(self, master, exposevariable, *args, **kwargs):
-        super().__init__(
-            master,
-            textvariable=exposevariable,
-            #3borderwidth=2,
-            #relief="sunken",
-            #padding=(5, 5, 5, 5),
-            *args,
-            **kwargs
-        )
-        self.label_variable = exposevariable
-        self.entry = ttk.Entry(self, font=("Noto Sans", 15))
+    def __init__(self, master, exposevariable, json_file, *args, **kwargs):
+        super().__init__(master, textvariable=exposevariable, *args, **kwargs)
+        self.expose_variable = exposevariable
+        self.json_file = json_file
+        self.entry = ttk.Entry(self, font=("Noto Sans", 13))
         self.bind("<Double-1>", self.edit_start)
         self.entry.bind("<Return>", self.edit_save)
-        self.entry.bind("<FocusOut>", self.edit_stop) 
+        self.entry.bind("<Button-3>", self.edit_copy)
+        self.entry.bind("<Control-C>", self.edit_copy)
+        self.entry.bind("<FocusOut>", self.edit_stop)
         self.entry.bind("<Escape>", self.edit_cancel)
+
+
+    def edit_copy(self, event=None):
+        self.clipboard_append(self.entry.get())
 
     def edit_start(self, event=None):
         self.entry.place(
-            relx=0.5, rely=0.5, relwidth=1.0, relheight=1.5, anchor="center"
+            relx=0.5, rely=0.5, relwidth=1.0, relheight=1.1, anchor="center"
         )
+        self.entry.delete(0, END)
+        self.entry.insert(0, super().cget("text"))
         self.entry.focus_set()
         self.editing = True
 
     def edit_save(self, event=None):
         self.configure(text=self.entry.get())
-        super(EditableLabel, self).config(text=self.entry.get())
+        print("Current value from self: ", self.entry.get())
+        print("Current value from super: ", super().cget("text"))
+        self.expose_variable.set(self.entry.get())
+        print("Current value from self after setvar: ", self.entry.get())
+        print("Current value from super after setvar: ", super().cget("text"))
         self.entry.place_forget()
 
     def edit_stop(self, event=None):
         self.configure(text=self.entry.get())
+        self.editing = False
         self.entry.place_forget()
 
     def edit_cancel(self, event=None):
@@ -49,97 +54,128 @@ class Dash(ttk.Frame):
     def __init__(self, master, json_file):
         super().__init__(master, padding=(5, 5))
         self.pack(fill=BOTH, expand=YES)
-        self.editing = False
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
+        self.editing = False
+        self.json_file = json_file
+        self.refresh_rate = 5000
 
         # form header
         header_text = "State Monitor"
         header = ttk.Label(
-            master=self, font=("Noto Sans", 23), text=header_text, width=50
+            master=self,
+            font=("Noto Sans", 23),
+            text=header_text,
+            width=12,
+            bootstyle="primary",
         )
-        header.pack(fill=X, pady=5)
+        header.pack(side=TOP, fill=X, padx=15, pady=15)
 
-        self.status_evse = StringVar()
+        ttk.Separator(master=self, bootstyle='primary').pack(fill=X, pady=15)
+
+        self.status_evse = ttk.StringVar()
         self.create_entry("status_evse", self.status_evse)
-        self.Gun_connected = IntVar()
+        self.Gun_connected = ttk.IntVar()
         self.create_entry("Gun_connected", self.Gun_connected)
-        self.send_or_stop = IntVar()
+        self.send_or_stop = ttk.IntVar()
         self.create_entry("send_or_stop", self.send_or_stop)
-        self.Reservation_id = IntVar()
+        self.Reservation_id = ttk.IntVar()
         self.create_entry("Reservation_id", self.Reservation_id)
-        self.Estop = IntVar()
+        self.Estop = ttk.IntVar()
         self.create_entry("Estop", self.Estop)
-        self.Powerloss = IntVar()
+        self.Powerloss = ttk.IntVar()
         self.create_entry("Powerloss", self.Powerloss)
-        self.Idtag = StringVar()
+        self.Idtag = ttk.StringVar()
         self.create_entry("Idtag", self.Idtag)
-        self.Voltage = IntVar()
+        self.Voltage = ttk.IntVar()
         self.create_entry("Voltage", self.Voltage)
-        self.Current = IntVar()
+        self.Current = ttk.IntVar()
         self.create_entry("Current", self.Current)
-        self.Active_Power = IntVar()
+        self.Active_Power = ttk.IntVar()
         self.create_entry("Active_Power", self.Active_Power)
-        self.Frequency = IntVar()
+        self.Frequency = ttk.IntVar()
         self.create_entry("Frequency", self.Frequency)
-        self.Power_factor = IntVar()
+        self.Power_factor = ttk.IntVar()
         self.create_entry("Power_factor", self.Power_factor)
-        self.Temperature = IntVar()
+        self.Temperature = ttk.IntVar()
         self.create_entry("Temperature", self.Temperature)
-        self.create_buttonbox()
 
         provided_path = Path(json_file)
         if not provided_path.is_file():
             raise TypeError
 
-        self.json_file = json_file
         self.update_from_file()
 
-        self.update_job = self.after(500, self.update_from_file_callback)
+        self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
+
+        ttk.Separator(master=self, bootstyle='primary').pack(fill=X, pady=15)
+
+        self.create_buttons()
+
+        
     def create_entry(self, label, variable):
-        """Create a single form entry"""
+        """Create a row for one json key-value pair"""
         container = ttk.Frame(self)
         container.pack(fill=X, expand=YES, pady=5)
 
+        # Format json key name for GUI
         def format_json_key(string):
             return " ".join(word.title() for word in string.split("_"))
 
         key_label = ttk.Label(
-            master=container,
-            text=format_json_key(label),
-            width=19,
+            master=container, text=format_json_key(label), width=15, bootstyle="primary"
         )
-        key_label.pack(side=LEFT, fill=X, padx=15)
+        key_label.pack(side=LEFT, fill=X, padx=(15, 15))
 
-        self.editable = EditableLabel(master=container, exposevariable=variable)
-        self.editable.pack(side=LEFT, padx=5, fill=X, expand=YES)
+        # Builtin label border styles look dated. This is a simple trick to
+        # Place the label in a frame with a themed color to 'simulate' a border.
+        #
+        editable_container = ttk.Frame(master=container, bootstyle="dark")
+        editable_container.pack(side=LEFT, padx=(5, 5), fill=X, expand=YES)
+        self.editable = EditableLabel(
+            master=editable_container, exposevariable=variable, json_file=self.json_file
+        )
+        self.editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
 
-    def create_buttonbox(self):
-        """Create the application buttonbox"""
+    def create_buttons(self):
+        """A method to setup the buttons at the bottom"""
         container = ttk.Frame(self)
         container.pack(fill=X, expand=YES, pady=(15, 10))
 
+        # Writes edited values to the json file
         edit_button = ttk.Button(
             master=container,
-            text="Edit",
-            command=self.on_edit,
-            bootstyle=INFO,
+            text="Save",
+            command=self.on_save,
+            bootstyle=PRIMARY,
             width=6,
         )
         edit_button.pack(side=RIGHT, padx=5)
         edit_button.focus_set()
-
-        cancel_button = ttk.Button(
+        
+        # Copies the entire json to the system clipboard
+        copy_button = ttk.Button(
             master=container,
-            text="Cancel",
-            command=self.on_cancel,
-            bootstyle=DARK,
+            text="Copy",
+            command=self.on_save,
+            bootstyle=PRIMARY,
             width=6,
         )
-        cancel_button.pack(side=RIGHT, padx=5)
+        copy_button.pack(side=RIGHT, padx=5)
+        copy_button.focus_set()
 
-    def on_edit(self):
+        # Exits the program
+        exit_button = ttk.Button(
+            master=container,
+            text="Exit",
+            command=self.on_cancel,
+            bootstyle=DANGER,
+            width=6,
+        )
+        exit_button.pack(side=LEFT, padx=5)
+
+    def on_save(self):
         data = {}
         data["status_evse"] = self.status_evse.get()
         data["Gun_connected"] = self.Gun_connected.get()
@@ -186,12 +222,11 @@ class Dash(ttk.Frame):
     def update_from_file_callback(self):
         if not self.editing:
             self.update_from_file()
-        self.update_job = self.after(500, self.update_from_file_callback)
+        self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
 
 if __name__ == "__main__":
-
     app = ttk.Window("Data Entry", "dashui", resizable=(False, False))
-    app.geometry("550x750")
+    app.geometry("550x800")
     Dash(app, "memory.json")
     app.mainloop()
