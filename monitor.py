@@ -17,7 +17,6 @@ class EditableLabel(ttk.Label):
         self.entry.bind("<FocusOut>", self.edit_stop)
         self.entry.bind("<Escape>", self.edit_cancel)
 
-
     def edit_copy(self, event=None):
         self.clipboard_append(self.entry.get())
 
@@ -71,7 +70,7 @@ class Dash(ttk.Frame):
         )
         header.pack(side=TOP, fill=X, padx=15, pady=15)
 
-        ttk.Separator(master=self, bootstyle='primary').pack(fill=X, pady=15)
+        ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=15)
 
         self.status_evse = ttk.StringVar()
         self.create_entry("status_evse", self.status_evse)
@@ -108,12 +107,10 @@ class Dash(ttk.Frame):
 
         self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
-
-        ttk.Separator(master=self, bootstyle='primary').pack(fill=X, pady=15)
+        ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=15)
 
         self.create_buttons()
 
-        
     def create_entry(self, label, variable):
         """Create a row for one json key-value pair"""
         container = ttk.Frame(self)
@@ -153,7 +150,7 @@ class Dash(ttk.Frame):
         )
         edit_button.pack(side=RIGHT, padx=5)
         edit_button.focus_set()
-        
+
         # Copies the entire json to the system clipboard
         copy_button = ttk.Button(
             master=container,
