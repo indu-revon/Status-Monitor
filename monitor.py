@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-
+import pyperclip
 
 class EditableLabel(ttk.Label):
-    def __init__(self, master, exposevariable, json_file, *args, **kwargs):
+    def __init__(self, master, exposevariable, editing, *args, **kwargs):
         super().__init__(master, textvariable=exposevariable, *args, **kwargs)
         self.expose_variable = exposevariable
-        self.json_file = json_file
+        self.editing = editing
         self.entry = ttk.Entry(self, font=("Noto Sans", 13))
         self.bind("<Double-1>", self.edit_start)
         self.entry.bind("<Return>", self.edit_save)
@@ -18,16 +18,17 @@ class EditableLabel(ttk.Label):
         self.entry.bind("<Escape>", self.edit_cancel)
 
     def edit_copy(self, event=None):
-        self.clipboard_append(self.entry.get())
+        pyperclip.copy(self.entry.get())
+        print("Copied from edit_copy")
 
     def edit_start(self, event=None):
         self.entry.place(
-            relx=0.5, rely=0.5, relwidth=1.0, relheight=1.1, anchor="center"
+            relx=0.5, rely=0.5, relwidth=1.0, relheight=1.0, anchor="center"
         )
         self.entry.delete(0, END)
         self.entry.insert(0, super().cget("text"))
         self.entry.focus_set()
-        self.editing = True
+        self.editing[0] = True
 
     def edit_save(self, event=None):
         self.configure(text=self.entry.get())
@@ -40,11 +41,12 @@ class EditableLabel(ttk.Label):
 
     def edit_stop(self, event=None):
         self.configure(text=self.entry.get())
-        self.editing = False
+        self.editing[0] = False
         self.entry.place_forget()
 
     def edit_cancel(self, event=None):
         self.entry.delete(0, "end")
+        self.editing[0] = False
         self.entry.place_forget()
 
 
@@ -55,7 +57,7 @@ class Dash(ttk.Frame):
         self.pack(fill=BOTH, expand=YES)
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
-        self.editing = False
+        self.editing = [False]
         self.json_file = json_file
         self.refresh_rate = 5000
 
@@ -130,10 +132,12 @@ class Dash(ttk.Frame):
         #
         editable_container = ttk.Frame(master=container, bootstyle="dark")
         editable_container.pack(side=LEFT, padx=(5, 5), fill=X, expand=YES)
-        self.editable = EditableLabel(
-            master=editable_container, exposevariable=variable, json_file=self.json_file
+        editable = EditableLabel(
+            master=editable_container,
+            exposevariable=variable,
+            editing=self.editing,
         )
-        self.editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
+        editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
 
     def create_buttons(self):
         """A method to setup the buttons at the bottom"""
@@ -155,7 +159,7 @@ class Dash(ttk.Frame):
         copy_button = ttk.Button(
             master=container,
             text="Copy",
-            command=self.on_save,
+            command=self.on_copy,
             bootstyle=PRIMARY,
             width=6,
         )
@@ -171,6 +175,26 @@ class Dash(ttk.Frame):
             width=6,
         )
         exit_button.pack(side=LEFT, padx=5)
+
+
+    def on_copy(self):
+        data = {}
+        data["status_evse"] = self.status_evse.get()
+        data["Gun_connected"] = self.Gun_connected.get()
+        data["send_or_stop"] = self.send_or_stop.get()
+        data["Reservation_id"] = self.Reservation_id.get()
+        data["Estop"] = self.Estop.get()
+        data["Powerloss"] = self.Powerloss.get()
+        data["Idtag"] = self.Idtag.get()
+        data["Voltage"] = self.Voltage.get()
+        data["Current"] = self.Current.get()
+        data["Active_Power"] = self.Active_Power.get()
+        data["Frequency"] = self.Frequency.get()
+        data["Power_factor"] = self.Power_factor.get()
+        data["Temperature"] = self.Temperature.get()
+        data["status_evse"] = self.status_evse.get()
+        pyperclip.copy(json.dumps(data, indent=4))
+
 
     def on_save(self):
         data = {}
@@ -189,9 +213,8 @@ class Dash(ttk.Frame):
         data["Temperature"] = self.Temperature.get()
         data["status_evse"] = self.status_evse.get()
 
-        print(data)
-
         with open(self.json_file, "w") as json_file_write:
+            print('About to write this: ', data)
             json.dump(data, json_file_write, indent=4)
 
     def on_cancel(self):
@@ -217,8 +240,14 @@ class Dash(ttk.Frame):
             self.Temperature.set(data["Temperature"])
 
     def update_from_file_callback(self):
-        if not self.editing:
+        if not self.editing[0]:
+            print("@@@@@@@ Resumed Updating @@@@@@@")
             self.update_from_file()
+        else:
+            print("@@@@@@@ Updating has been paused. @@@@@@@")
+            self.on_save()
+            self.editing[0] = False
+
         self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
 
