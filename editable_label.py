@@ -8,6 +8,7 @@ logging.basicConfig(
     encoding="utf-8", format="[%(funcName)s() ] %(message)s", level=logging.DEBUG
 )
 
+
 class EditableLabel(ttk.Label):
     def __init__(self, master, exposevariable, update_state, *args, **kwargs):
         super().__init__(master, textvariable=exposevariable, *args, **kwargs)
@@ -55,5 +56,3 @@ class EditableLabel(ttk.Label):
         self.update_state["Commit"] = False
         logger.info("Edit session aborted. Reason: Cancelled.")
         self.entry.place_forget()
-
-
