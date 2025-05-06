@@ -3,63 +3,63 @@ from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import pyperclip
-
+from editable_label import EditableLabel
 
 import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    encoding="utf-8", format="[%(funcName)20s() ] %(message)s", level=logging.DEBUG
+    encoding="utf-8", format="[%(funcName)s() ] %(message)s", level=logging.DEBUG
 )
 
 
-class EditableLabel(ttk.Label):
-    def __init__(self, master, exposevariable, update_state, *args, **kwargs):
-        super().__init__(master, textvariable=exposevariable, *args, **kwargs)
-        self.expose_variable = exposevariable
-        self.update_state = update_state
-        self.entry = ttk.Entry(self, font=("Noto Sans", 13))
-        self.bind("<Double-1>", self.edit_start)
-        self.entry.bind("<Return>", self.edit_save)
-        self.entry.bind("<Button-3>", self.edit_copy)
-        self.entry.bind("<Control-C>", self.edit_copy)
-        self.entry.bind("<FocusOut>", self.edit_stop)
-        self.entry.bind("<Escape>", self.edit_cancel)
+#lass EditableLabel(ttk.Label):
+#   def __init__(self, master, exposevariable, update_state, *args, **kwargs):
+#       super().__init__(master, textvariable=exposevariable, *args, **kwargs)
+#       self.expose_variable = exposevariable
+#       self.update_state = update_state
+#       self.entry = ttk.Entry(self, font=("Noto Sans", 13))
+#       self.bind("<Double-1>", self.edit_start)
+#       self.entry.bind("<Return>", self.edit_save)
+#       self.entry.bind("<Button-3>", self.edit_copy)
+#       self.entry.bind("<Control-C>", self.edit_copy)
+#       self.entry.bind("<FocusOut>", self.edit_stop)
+#       self.entry.bind("<Escape>", self.edit_cancel)
 
-    def edit_copy(self, event=None):
-        pyperclip.copy(self.entry.get())
-        logger.info("Value copied from entry widget,")
+#   def edit_copy(self, event=None):
+#       pyperclip.copy(self.entry.get())
+#       logger.info("Value copied from entry widget,")
 
-    def edit_start(self, event=None):
-        self.entry.place(
-            relx=0.5, rely=0.5, relwidth=1.0, relheight=1.0, anchor="center"
-        )
-        self.entry.delete(0, END)
-        self.entry.insert(0, super().cget("text"))
-        self.entry.focus_set()
-        self.update_state["Editing"] = True
-        logger.info("Edit session begun.")
+#   def edit_start(self, event=None):
+#       self.entry.place(
+#           relx=0.5, rely=0.5, relwidth=1.0, relheight=1.0, anchor="center"
+#       )
+#       self.entry.delete(0, END)
+#       self.entry.insert(0, super().cget("text"))
+#       self.entry.focus_set()
+#       self.update_state["Editing"] = True
+#       logger.info("Edit session begun.")
 
-    def edit_save(self, event=None):
-        self.configure(text=self.entry.get())
-        self.expose_variable.set(self.entry.get())
-        self.update_state["Commit"] = True
-        logger.info(f"Value changed. Awaiting commit.")
-        self.entry.place_forget()
+#   def edit_save(self, event=None):
+#       self.configure(text=self.entry.get())
+#       self.expose_variable.set(self.entry.get())
+#       self.update_state["Commit"] = True
+#       logger.info(f"Value changed. Awaiting commit.")
+#       self.entry.place_forget()
 
-    def edit_stop(self, event=None):
-        self.configure(text=self.entry.get())
-        self.update_state["Editing"] = False
-        self.update_state["Commit"] = False
-        logger.info("Edit session aborted. Reason: Focus Lost.")
-        self.entry.place_forget()
+#   def edit_stop(self, event=None):
+#       self.configure(text=self.entry.get())
+#       self.update_state["Editing"] = False
+#       self.update_state["Commit"] = False
+#       logger.info("Edit session aborted. Reason: Focus Lost.")
+#       self.entry.place_forget()
 
-    def edit_cancel(self, event=None):
-        self.entry.delete(0, "end")
-        self.update_state["Editing"] = False
-        self.update_state["Commit"] = False
-        logger.info("Edit session aborted. Reason: Cancelled.")
-        self.entry.place_forget()
+#   def edit_cancel(self, event=None):
+#       self.entry.delete(0, "end")
+#       self.update_state["Editing"] = False
+#       self.update_state["Commit"] = False
+#       logger.info("Edit session aborted. Reason: Cancelled.")
+#       self.entry.place_forget()
 
 
 class Dash(ttk.Frame):
@@ -86,32 +86,51 @@ class Dash(ttk.Frame):
 
         ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=15)
 
+        # RO
         self.status_evse = ttk.StringVar()
         self.create_entry("status_evse", self.status_evse)
-        self.Gun_connected = ttk.IntVar()
-        self.create_entry("Gun_connected", self.Gun_connected)
-        self.send_or_stop = ttk.IntVar()
-        self.create_entry("send_or_stop", self.send_or_stop)
-        self.Reservation_id = ttk.IntVar()
-        self.create_entry("Reservation_id", self.Reservation_id)
-        self.Estop = ttk.IntVar()
-        self.create_entry("Estop", self.Estop)
-        self.Powerloss = ttk.IntVar()
-        self.create_entry("Powerloss", self.Powerloss)
+
         self.Idtag = ttk.StringVar()
         self.create_entry("Idtag", self.Idtag)
-        self.Voltage = ttk.IntVar()
-        self.create_entry("Voltage", self.Voltage)
-        self.Current = ttk.IntVar()
-        self.create_entry("Current", self.Current)
+
         self.Active_Power = ttk.IntVar()
         self.create_entry("Active_Power", self.Active_Power)
-        self.Frequency = ttk.IntVar()
-        self.create_entry("Frequency", self.Frequency)
+
         self.Power_factor = ttk.IntVar()
         self.create_entry("Power_factor", self.Power_factor)
+
+        self.Reservation_id = ttk.IntVar()
+        self.create_entry("Reservation_id", self.Reservation_id)
+
+        # Sliders
+        self.Voltage = ttk.IntVar()
+        self.create_entry("Voltage", self.Voltage)
+
+        self.Current = ttk.IntVar()
+        self.create_entry("Current", self.Current)
+
+        self.Frequency = ttk.IntVar()
+        self.create_entry("Frequency", self.Frequency)
+
         self.Temperature = ttk.IntVar()
         self.create_entry("Temperature", self.Temperature)
+
+
+        # This should be a toggle
+        self.Gun_connected = ttk.IntVar()
+        self.create_entry("Gun_connected", self.Gun_connected)
+
+        # This, even I am not sure yet
+        self.send_or_stop = ttk.IntVar()
+        self.create_entry("send_or_stop", self.send_or_stop)
+
+        # Emergency Stop: This should be a button
+        self.Estop = ttk.IntVar()
+        self.create_entry("Estop", self.Estop)
+
+        # This should be a visual indicator for powerloss occurence
+        self.Powerloss = ttk.IntVar()
+        self.create_entry("Powerloss", self.Powerloss)
 
         provided_path = Path(json_file)
         if not provided_path.is_file():
