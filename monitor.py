@@ -8,7 +8,9 @@ import pyperclip
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8', format="[%(funcName)20s() ] %(message)s", level=logging.DEBUG)
+logging.basicConfig(
+    encoding="utf-8", format="[%(funcName)20s() ] %(message)s", level=logging.DEBUG
+)
 
 
 class EditableLabel(ttk.Label):
@@ -67,7 +69,7 @@ class Dash(ttk.Frame):
         self.pack(fill=BOTH, expand=YES)
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
-        self.update_state = { "Editing": False, "Commit": False }
+        self.update_state = {"Editing": False, "Commit": False}
         self.json_file = json_file
         self.refresh_rate = 500
 
@@ -186,7 +188,6 @@ class Dash(ttk.Frame):
         )
         exit_button.pack(side=LEFT, padx=5)
 
-
     def on_copy(self):
         data = {}
         data["status_evse"] = self.status_evse.get()
@@ -204,7 +205,6 @@ class Dash(ttk.Frame):
         data["Temperature"] = self.Temperature.get()
         data["status_evse"] = self.status_evse.get()
         pyperclip.copy(json.dumps(data, indent=4))
-
 
     def on_save(self):
         data = {}
@@ -226,7 +226,7 @@ class Dash(ttk.Frame):
         with open(self.json_file, "w") as json_file_write:
             logger.info(f"Commiting to file: {json.dumps(data, indent=4)}")
             json.dump(data, json_file_write, indent=4)
-            json_file_write.write('\n')
+            json_file_write.write("\n")
 
     def on_exit(self):
         """Exit the application."""
@@ -256,7 +256,9 @@ class Dash(ttk.Frame):
             self.on_save()
             self.update_state["Commit"] = False
             self.update_state["Editing"] = False
-            logger.info(f"Changes commited to file. Exiting Commit session and edit session.")
+            logger.info(
+                f"Changes commited to file. Exiting Commit session and edit session."
+            )
 
         if not self.update_state["Editing"]:
             logger.debug(f"Refreshing GUI from file contents: {self.json_file}")
