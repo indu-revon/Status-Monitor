@@ -4,11 +4,18 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import pyperclip
 
+
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', format="[%(funcName)20s() ] %(message)s", level=logging.DEBUG)
+
+
 class EditableLabel(ttk.Label):
-    def __init__(self, master, exposevariable, editing, *args, **kwargs):
+    def __init__(self, master, exposevariable, update_state, *args, **kwargs):
         super().__init__(master, textvariable=exposevariable, *args, **kwargs)
         self.expose_variable = exposevariable
-        self.editing = editing
+        self.update_state = update_state
         self.entry = ttk.Entry(self, font=("Noto Sans", 13))
         self.bind("<Double-1>", self.edit_start)
         self.entry.bind("<Return>", self.edit_save)
@@ -19,7 +26,7 @@ class EditableLabel(ttk.Label):
 
     def edit_copy(self, event=None):
         pyperclip.copy(self.entry.get())
-        print("Copied from edit_copy")
+        logger.info("Value copied from entry widget,")
 
     def edit_start(self, event=None):
         self.entry.place(
@@ -28,25 +35,28 @@ class EditableLabel(ttk.Label):
         self.entry.delete(0, END)
         self.entry.insert(0, super().cget("text"))
         self.entry.focus_set()
-        self.editing[0] = True
+        self.update_state["Editing"] = True
+        logger.info("Edit session begun.")
 
     def edit_save(self, event=None):
         self.configure(text=self.entry.get())
-        print("Current value from self: ", self.entry.get())
-        print("Current value from super: ", super().cget("text"))
         self.expose_variable.set(self.entry.get())
-        print("Current value from self after setvar: ", self.entry.get())
-        print("Current value from super after setvar: ", super().cget("text"))
+        self.update_state["Commit"] = True
+        logger.info(f"Value changed. Awaiting commit.")
         self.entry.place_forget()
 
     def edit_stop(self, event=None):
         self.configure(text=self.entry.get())
-        self.editing[0] = False
+        self.update_state["Editing"] = False
+        self.update_state["Commit"] = False
+        logger.info("Edit session aborted. Reason: Focus Lost.")
         self.entry.place_forget()
 
     def edit_cancel(self, event=None):
         self.entry.delete(0, "end")
-        self.editing[0] = False
+        self.update_state["Editing"] = False
+        self.update_state["Commit"] = False
+        logger.info("Edit session aborted. Reason: Cancelled.")
         self.entry.place_forget()
 
 
@@ -57,9 +67,9 @@ class Dash(ttk.Frame):
         self.pack(fill=BOTH, expand=YES)
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
-        self.editing = [False]
+        self.update_state = { "Editing": False, "Commit": False }
         self.json_file = json_file
-        self.refresh_rate = 5000
+        self.refresh_rate = 500
 
         # form header
         header_text = "State Monitor"
@@ -105,7 +115,7 @@ class Dash(ttk.Frame):
         if not provided_path.is_file():
             raise TypeError
 
-        self.update_from_file()
+        self.update_from_file_callback()
 
         self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
@@ -135,7 +145,7 @@ class Dash(ttk.Frame):
         editable = EditableLabel(
             master=editable_container,
             exposevariable=variable,
-            editing=self.editing,
+            update_state=self.update_state,
         )
         editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
 
@@ -170,7 +180,7 @@ class Dash(ttk.Frame):
         exit_button = ttk.Button(
             master=container,
             text="Exit",
-            command=self.on_cancel,
+            command=self.on_exit,
             bootstyle=DANGER,
             width=6,
         )
@@ -214,11 +224,13 @@ class Dash(ttk.Frame):
         data["status_evse"] = self.status_evse.get()
 
         with open(self.json_file, "w") as json_file_write:
-            print('About to write this: ', data)
+            logger.info(f"Commiting to file: {json.dumps(data, indent=4)}")
             json.dump(data, json_file_write, indent=4)
+            json_file_write.write('\n')
 
-    def on_cancel(self):
-        """Cancel and close the application."""
+    def on_exit(self):
+        """Exit the application."""
+        logger.info("Exitting application.")
         self.quit()
 
     def update_from_file(self):
@@ -240,13 +252,15 @@ class Dash(ttk.Frame):
             self.Temperature.set(data["Temperature"])
 
     def update_from_file_callback(self):
-        if not self.editing[0]:
-            print("@@@@@@@ Resumed Updating @@@@@@@")
-            self.update_from_file()
-        else:
-            print("@@@@@@@ Updating has been paused. @@@@@@@")
+        if self.update_state["Commit"]:
             self.on_save()
-            self.editing[0] = False
+            self.update_state["Commit"] = False
+            self.update_state["Editing"] = False
+            logger.info(f"Changes commited to file. Exiting Commit session and edit session.")
+
+        if not self.update_state["Editing"]:
+            logger.debug(f"Refreshing GUI from file contents: {self.json_file}")
+            self.update_from_file()
 
         self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
 
