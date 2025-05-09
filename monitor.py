@@ -20,7 +20,7 @@ PATH = Path(__file__).parent / "assets"
 
 class Dash(ttk.Frame):
 
-    def __init__(self, master, json_file):
+    def __init__(self, master, json_file, refresh_rate):
         super().__init__(master, padding=(5, 5))
         self.pack(fill=BOTH, expand=YES)
 
@@ -342,10 +342,6 @@ class Dash(ttk.Frame):
 
         # RW End
 
-        provided_path = Path(json_file)
-        if not provided_path.is_file():
-            raise TypeError
-
         self.update_from_file_callback()
 
         self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
@@ -355,33 +351,33 @@ class Dash(ttk.Frame):
         self.create_buttons()
 
     # Format json key name for GUI
-    def format_json_key(self, string):
-        return " ".join(word.title() for word in string.split("_"))
+    #   def format_json_key(self, string):
+    #       return " ".join(word.title() for word in string.split("_"))
 
-    def create_entry(self, label, variable):
-        """Create a row for one json key-value pair"""
-        container = ttk.Frame(self)
-        container.pack(fill=X, expand=YES, pady=5)
+    #   def create_entry(self, label, variable):
+    #       """Create a row for one json key-value pair"""
+    #       container = ttk.Frame(self)
+    #       container.pack(fill=X, expand=YES, pady=5)
 
-        key_label = ttk.Label(
-            master=container,
-            text=self.format_json_key(label),
-            width=15,
-            bootstyle="primary",
-        )
-        key_label.pack(side=LEFT, fill=X, padx=(15, 15))
+    #       key_label = ttk.Label(
+    #           master=container,
+    #           text=self.format_json_key(label),
+    #           width=15,
+    #           bootstyle="primary",
+    #       )
+    #       key_label.pack(side=LEFT, fill=X, padx=(15, 15))
 
-        # Builtin label border styles look dated. This is a simple trick to
-        # Place the label in a frame with a themed color to 'simulate' a border.
-        #
-        editable_container = ttk.Frame(master=container, bootstyle="dark")
-        editable_container.pack(side=LEFT, padx=(5, 5), fill=X, expand=YES)
-        editable = EditableLabel(
-            master=editable_container,
-            exposevariable=variable,
-            update_state=self.update_state,
-        )
-        editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
+    #       # Builtin label border styles look dated. This is a simple trick to
+    #       # Place the label in a frame with a themed color to 'simulate' a border.
+    #       #
+    #       editable_container = ttk.Frame(master=container, bootstyle="dark")
+    #       editable_container.pack(side=LEFT, padx=(5, 5), fill=X, expand=YES)
+    #       editable = EditableLabel(
+    #           master=editable_container,
+    #           exposevariable=variable,
+    #           update_state=self.update_state,
+    #       )
+    #       editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
 
     def create_buttons(self):
         """A method to setup the buttons at the bottom"""
@@ -503,13 +499,44 @@ class Dash(ttk.Frame):
 
 
 if __name__ == "__main__":
-    app = ttk.Window("Status Monitor", "dashui", resizable=(False, False))
-    arg_parser = argparse.ArgumentParse(
+    arg_parser = argparse.ArgumentParser(
         prog="Status Monitor",
-        description="Minimal GUI application to display status encoded in JSON",
+        description="Minimal GUI application to display status from given JSON file and manipulate EV Charger state",
     )
-    arg_parser.add_argument("-s", "--source", "")
-    initial_dimensions = "600x850"
-    app.geometry(initial_dimensions)
-    Dash(app, "memory.json")
+    arg_parser.add_argument(
+        "-s",
+        "--source",
+        default="./memory.json",
+        help="Path to the json file to monitor",
+    )
+    arg_parser.add_argument("-c", "--config", help="Path to the GUI configuration file")
+    arg_parser.add_argument(
+        "-L",
+        "--loglevel",
+        help="Specify the verbosity of logs: debug, info, warn, error, quiet",
+    )
+    arg_parser.add_argument(
+        "-r",
+        "--refresh",
+        default=500,
+        help="Time period in ms at which to periodically check source file",
+    )
+    arg_parser.add_argument("-w", "--width", default=600, help="GUI width")
+    arg_parser.add_argument("-l", "--length", default=850, help="GUI height")
+
+    arguments = arg_parser.parse_args()
+
+    json_file = arguments.source
+
+    provided_path = Path(json_file)
+    if not provided_path.is_file():
+        logger.error(f"Source json file {str(provided_path)} does not seem to exist.")
+        exit(1)
+
+    x = arguments.width
+    y = arguments.length
+    app = ttk.Window("Status Monitor", "dashui", size=(x, y), resizable=(False, False))
+
+    # config_file = arg_parser.config
+    Dash(app, json_file, arguments.refresh)
     app.mainloop()
