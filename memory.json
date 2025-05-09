@@ -1,6 +1,6 @@
 {
     "status_evse": "A",
-    "Gun_connected": 0,
+    "gun_connected": 0,
     "send_or_stop": 0,
     "Reservation_id": 0,
     "Estop": 0,
