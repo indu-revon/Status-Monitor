@@ -2,7 +2,7 @@
     "status_evse": "A",
     "gun_connected": 0,
     "send_or_stop": 0,
-    "Reservation_id": 0,
+    "reservation_id": 0,
     "estop": 0,
     "Powerloss": 0,
     "Idtag": "SSLAKY7LXAK3M2VX",
