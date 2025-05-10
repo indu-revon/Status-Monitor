@@ -1,6 +1,13 @@
+"""
+    Status monitor. A GUI application based on ttk/ttkbootstrap 
+    to monitor EV charger state via a provided json file and 
+    controls are provided to perform basic actions.
+"""
+
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH, YES, TOP, BOTTOM, LEFT, RIGHT, X
@@ -8,13 +15,13 @@ from ttkbootstrap.themes.standard import STANDARD_THEMES
 import pyperclip
 
 
-from pathlib import Path
-
 PATH = Path(__file__).parent / "assets"
 
 
 class Dash(ttk.Frame):
-
+    """
+        All the UI elements are embedded in the Dash Class. 
+    """
     def __init__(self, master, json_file, refresh_rate):
         super().__init__(master, padding=(5, 5))
         self.pack(fill=BOTH, expand=YES)
@@ -90,21 +97,21 @@ class Dash(ttk.Frame):
         status_evse_value_label.pack(**value_label_pack_params)
 
         # Reservation Id
-        Reservation_id_container = ttk.Frame(master=coupled_container_1)
-        Reservation_id_container.pack(side=LEFT, fill=X, expand=YES)
+        reservation_id_container = ttk.Frame(master=coupled_container_1)
+        reservation_id_container.pack(side=LEFT, fill=X, expand=YES)
 
-        Reservation_id_key_label = ttk.Label(
-            master=Reservation_id_container, text="Reservation ID", **key_label_style
+        reservation_id_key_label = ttk.Label(
+            master=reservation_id_container, text="Reservation ID", **key_label_style
         )
-        Reservation_id_key_label.pack(**key_label_pack_params)
+        reservation_id_key_label.pack(**key_label_pack_params)
 
-        self.Reservation_id = ttk.IntVar()
-        Reservation_id_value_label = ttk.Label(
-            master=Reservation_id_container,
-            textvariable=self.Reservation_id,
+        self.reservation_id = ttk.IntVar()
+        reservation_id_value_label = ttk.Label(
+            master=reservation_id_container,
+            textvariable=self.reservation_id,
             width=value_label_width,
         )
-        Reservation_id_value_label.pack(**value_label_pack_params)
+        reservation_id_value_label.pack(**value_label_pack_params)
 
         # 1st coupled container end
 
@@ -113,38 +120,38 @@ class Dash(ttk.Frame):
         coupled_container_2.pack(**ro_child_container_pack_params)
 
         # Active Power
-        Active_Power_container = ttk.Frame(master=coupled_container_2)
-        Active_Power_container.pack(side=LEFT, fill=X, expand=YES)
+        active_power_container = ttk.Frame(master=coupled_container_2)
+        active_power_container.pack(side=LEFT, fill=X, expand=YES)
 
-        Active_Power_key_label = ttk.Label(
-            master=Active_Power_container, text="Active Power", **key_label_style
+        active_power_key_label = ttk.Label(
+            master=active_power_container, text="Active Power", **key_label_style
         )
-        Active_Power_key_label.pack(**key_label_pack_params)
+        active_power_key_label.pack(**key_label_pack_params)
 
-        self.Active_Power = ttk.IntVar()
-        Active_Power_value_label = ttk.Label(
-            master=Active_Power_container,
-            textvariable=self.Active_Power,
+        self.active_power = ttk.IntVar()
+        active_power_value_label = ttk.Label(
+            master=active_power_container,
+            textvariable=self.active_power,
             width=value_label_width,
         )
-        Active_Power_value_label.pack(**value_label_pack_params)
+        active_power_value_label.pack(**value_label_pack_params)
 
         # Power Factor
-        Power_factor_container = ttk.Frame(master=coupled_container_2)
-        Power_factor_container.pack(side=RIGHT, fill=X, expand=YES)
+        power_factor_container = ttk.Frame(master=coupled_container_2)
+        power_factor_container.pack(side=RIGHT, fill=X, expand=YES)
 
-        Power_factor_key_label = ttk.Label(
-            master=Power_factor_container, text="Power Factor", **key_label_style
+        power_factor_key_label = ttk.Label(
+            master=power_factor_container, text="Power Factor", **key_label_style
         )
-        Power_factor_key_label.pack(**key_label_pack_params)
+        power_factor_key_label.pack(**key_label_pack_params)
 
-        self.Power_factor = ttk.IntVar()
-        Power_factor_value_label = ttk.Label(
-            master=Power_factor_container,
-            textvariable=self.Power_factor,
+        self.power_factor = ttk.IntVar()
+        power_factor_value_label = ttk.Label(
+            master=power_factor_container,
+            textvariable=self.power_factor,
             width=value_label_width,
         )
-        Power_factor_value_label.pack(**value_label_pack_params)
+        power_factor_value_label.pack(**value_label_pack_params)
 
         # 2nd container end
 
@@ -157,29 +164,29 @@ class Dash(ttk.Frame):
         )
         id_tag_key_label.pack(**key_label_pack_params)
 
-        self.Idtag = ttk.StringVar()
-        id_tag_value_label = ttk.Label(master=id_tag_container, textvariable=self.Idtag)
+        self.id_tag = ttk.StringVar()
+        id_tag_value_label = ttk.Label(master=id_tag_container, textvariable=self.id_tag)
         id_tag_value_label.pack(**value_label_pack_params)
 
         # This should be a visual indicator for powerloss occurence
-        self.Powerloss = ttk.IntVar()
-        self.Powerloss_container = ttk.Frame(master=ro_container)
-        self.Powerloss_container.pack(**ro_child_container_pack_params)
+        self.powerloss = ttk.IntVar()
+        self.powerloss_container = ttk.Frame(master=ro_container)
+        self.powerloss_container.pack(**ro_child_container_pack_params)
 
         # This is just a TTK frame. No other elegant method available
         # to get a themed rectangle to change colors.
-        Powerloss_LED = ttk.Frame(
-            master=self.Powerloss_container, style="danger.TFrame"
+        powerloss_led = ttk.Frame(
+            master=self.powerloss_container, style="danger.TFrame"
         )
-        Powerloss_LED.pack(side=LEFT, fill=BOTH, expand=YES, padx=15, pady=15)
-        Powerloss_label = ttk.Label(
-            master=Powerloss_LED,
+        powerloss_led.pack(side=LEFT, fill=BOTH, expand=YES, padx=15, pady=15)
+        powerloss_label = ttk.Label(
+            master=powerloss_led,
             image="warning_icon",
             compound="right",
             text="Power Loss",
             style="danger.Inverse.TLabel",
         )
-        Powerloss_label.pack(side=TOP, fill=BOTH, expand=YES, padx=(200, 200), pady=10)
+        powerloss_label.pack(side=TOP, fill=BOTH, expand=YES, padx=(200, 200), pady=10)
 
         # RO END
 
@@ -323,6 +330,7 @@ class Dash(ttk.Frame):
 
         # Authorize Button
         self.authorization_state = False
+
         def authorization_check():
             return True
 
@@ -418,45 +426,50 @@ class Dash(ttk.Frame):
         exit_button.pack(side=LEFT, padx=5)
 
     def on_estop(self):
+        """ Callback for emergency stop button """
         self.estop.set(1)
         self.update_state["Editing"] = "on_estop"
         self.update_state["Commit"] = "on_estop"
 
     def on_copy(self):
+        """ Callback for copy button """
         data = {}
         data["status_evse"] = self.status_evse.get()
         data["gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
-        data["Reservation_id"] = self.Reservation_id.get()
+        data["reservation_id"] = self.reservation_id.get()
         data["estop"] = self.estop.get()
-        data["Powerloss"] = self.Powerloss.get()
-        data["Idtag"] = self.Idtag.get()
+        data["powerloss"] = self.powerloss.get()
+        data["id_tag"] = self.id_tag.get()
         data["Voltage"] = self.voltage.get()
         data["Current"] = self.current.get()
-        data["Active_Power"] = self.Active_Power.get()
+        data["active_power"] = self.active_power.get()
         data["Frequency"] = self.frequency.get()
-        data["Power_factor"] = self.Power_factor.get()
+        data["power_factor"] = self.power_factor.get()
         data["Temperature"] = self.temperature.get()
         pyperclip.copy(json.dumps(data, indent=4))
 
     def on_save(self):
+        """ Main method used to update the json file contents
+            based on changes in the GUI
+        """
         data = {}
         data["status_evse"] = self.status_evse.get()
         data["gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
-        data["Reservation_id"] = self.Reservation_id.get()
+        data["reservation_id"] = self.reservation_id.get()
         data["estop"] = self.estop.get()
-        data["Powerloss"] = self.Powerloss.get()
-        data["Idtag"] = self.Idtag.get()
+        data["powerloss"] = self.powerloss.get()
+        data["id_tag"] = self.id_tag.get()
         data["Voltage"] = self.voltage.get()
         data["Current"] = self.current.get()
-        data["Active_Power"] = self.Active_Power.get()
+        data["active_power"] = self.active_power.get()
         data["Frequency"] = self.frequency.get()
-        data["Power_factor"] = self.Power_factor.get()
+        data["power_factor"] = self.power_factor.get()
         data["Temperature"] = self.temperature.get()
 
-        with open(self.json_file, "w") as json_file_write:
-            logger.info(f"Commiting to file: {json.dumps(data, indent=4)}")
+        with open(self.json_file, "w", encoding="utf-8") as json_file_write:
+            logger.info("Commiting to file: %s", json.dumps(data, indent=4))
             json.dump(data, json_file_write, indent=4)
             json_file_write.write("\n")
 
@@ -466,42 +479,47 @@ class Dash(ttk.Frame):
         self.quit()
 
     def update_from_file(self):
-        with open(self.json_file, "r") as json_fp:
+        """Main method to update GUI state from json file"""
+        with open(self.json_file, "r", encoding="utf-8") as json_fp:
             data = json.load(json_fp)
 
             self.status_evse.set(data["status_evse"])
             self.gun_connected.set(data["gun_connected"])
             self.send_or_stop.set(data["send_or_stop"])
-            self.Reservation_id.set(data["Reservation_id"])
+            self.reservation_id.set(data["reservation_id"])
             self.estop.set(data["estop"])
 
             # Power Loss Indicator
-            if data["Powerloss"] == 0:
-                if self.Powerloss_container.winfo_manager():
-                    self.Powerloss_container.pack_forget()
-            elif data["Powerloss"] == 1:
-                self.Powerloss_container.pack(side=LEFT, fill=X, expand=YES)
+            if data["powerloss"] == 0:
+                if self.powerloss_container.winfo_manager():
+                    self.powerloss_container.pack_forget()
+            elif data["powerloss"] == 1:
+                self.powerloss_container.pack(side=LEFT, fill=X, expand=YES)
 
-            self.Idtag.set(data["Idtag"])
+            self.id_tag.set(data["id_tag"])
             self.voltage.set(data["Voltage"])
             self.current.set(data["Current"])
-            self.Active_Power.set(data["Active_Power"])
+            self.active_power.set(data["active_power"])
             self.frequency.set(data["Frequency"])
-            self.Power_factor.set(data["Power_factor"])
+            self.power_factor.set(data["power_factor"])
             self.temperature.set(data["Temperature"])
 
     def update_callback(self):
+        """ A wrapper around update_from_file which acts as the GUI periodical callback
+            and manages the state of data edited in the GUI and data present 
+            in the source json file
+        """
         if self.update_state["Commit"] != "":
-            logger.info(f"Write request for: {self.update_state['Commit']}")
+            logger.info("Write request for: %s", self.update_state['Commit'])
             self.on_save()
             self.update_state["Commit"] = ""
             self.update_state["Editing"] = ""
             logger.info(
-                f"Changes commited to file. Exiting Commit session and edit session."
+                "Changes commited to file. Exiting Commit session and edit session."
             )
 
         if not self.update_state["Editing"]:
-            logger.debug(f"Refreshing GUI from file contents: {self.json_file}")
+            logger.debug("Refreshing GUI from file contents: %s", self.json_file)
             self.update_from_file()
 
         self.update_job = self.after(self.refresh_rate, self.update_callback)
@@ -538,33 +556,31 @@ if __name__ == "__main__":
 
     arguments = arg_parser.parse_args()
 
-    json_file = arguments.source
+    loglevel = arguments.loglevel
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
+    logging.getLogger().setLevel(loglevel)
 
+    json_file = arguments.source
     provided_path = Path(json_file)
     if not provided_path.is_file():
-        logger.error(f"Source json file {str(provided_path)} does not seem to exist.")
-        exit(1)
+        logger.error("Source json file %s does not seem to exist.", str(provided_path))
+        sys.exit(1)
 
     x = arguments.width
     y = arguments.length
 
-    loglevel = arguments.loglevel
+    THEME = arguments.theme
 
-    theme = arguments.theme
-
-    if theme not in STANDARD_THEMES:
-        if theme.strip().lower() == "dark":
-            theme = "black"
-        elif theme.strip().lower() == "light":
-            theme = "yeti"
+    if THEME not in STANDARD_THEMES:
+        if THEME.strip().lower() == "dark":
+            THEME = "black"
+        elif THEME.strip().lower() == "light":
+            THEME = "yeti"
 
     app = ttk.Window(
-        title="Status Monitor", themename=theme, size=(x, y), resizable=(False, False)
+        title="Status Monitor", themename=THEME, size=(x, y), resizable=(False, False)
     )
 
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
-    logging.getLogger().setLevel(loglevel)
-    
     Dash(app, json_file, arguments.refresh)
     app.mainloop()
