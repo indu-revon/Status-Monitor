@@ -10,6 +10,6 @@
     "Current": 25,
     "active_power": 0,
     "Frequency": 0,
-    "Power_factor": 0,
+    "power_factor": 0,
     "Temperature": 40
 }
