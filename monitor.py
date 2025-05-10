@@ -1,16 +1,17 @@
-import json
 import argparse
+import json
+import logging
 from pathlib import Path
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap.constants import BOTH, YES, TOP, BOTTOM, LEFT, RIGHT, X
+from ttkbootstrap.themes.standard import STANDARD_THEMES
 import pyperclip
 from editable_label import EditableLabel
 
-import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    encoding="utf-8", format="[%(funcName)s() ] %(message)s", level=logging.DEBUG
+    encoding="utf-8", format="[%(funcName)s() ] %(message)s"
 )
 
 from pathlib import Path
@@ -28,9 +29,9 @@ class Dash(ttk.Frame):
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
 
-        self.update_state = {"Editing": False, "Commit": False}
+        self.update_state = {"Editing": "", "Commit": ""}
         self.json_file = json_file
-        self.refresh_rate = 500
+        self.refresh_rate = refresh_rate
 
         self.images = [
             ttk.PhotoImage(name="warning_icon", file=PATH / "warning_icon_32x32.png")
@@ -173,7 +174,8 @@ class Dash(ttk.Frame):
         self.Powerloss_container = ttk.Frame(master=ro_container)
         self.Powerloss_container.pack(**ro_child_container_pack_params)
 
-        # This is just a TTK frame. No other elegant method available to get a themed rectangle to change colors.
+        # This is just a TTK frame. No other elegant method available 
+        # to get a themed rectangle to change colors.
         Powerloss_LED = ttk.Frame(
             master=self.Powerloss_container, style="danger.TFrame"
         )
@@ -185,7 +187,7 @@ class Dash(ttk.Frame):
             text="Power Loss",
             style="danger.Inverse.TLabel",
         )
-        Powerloss_label.pack(side=TOP, fill=BOTH, expand=YES, padx=(200, 10), pady=10)
+        Powerloss_label.pack(side=TOP, fill=BOTH, expand=YES, padx=(200, 200), pady=10)
 
         # RO END
 
@@ -299,16 +301,32 @@ class Dash(ttk.Frame):
         rw_coupled_container.pack(side=TOP, fill=X, pady=10, expand=YES)
 
         # This should be a toggle
+        self.gun_connection_toggle_state = False
+        def gun_connection_toggled():
+            if not self.gun_connection_toggle_state:
+                self.gun_connection_toggle_state = True
+                if self.gun_connected.get() == 0:
+                    self.gun_connected.set(1)
+                    self.update_state["Editing"] = "gun_connection_toggled"
+                    self.update_state["Commit"] = "gun_connection_toggled"
+            else:
+                self.gun_connection_toggle_state = False
+                if self.gun_connected.get() == 1:
+                    self.gun_connected.set(0) 
+                    self.update_state["Editing"] = "gun_connection_toggled"
+                    self.update_state["Commit"] = "gun_connected_toggled"
+
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
         gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
         dash_style.configure("TCheckbutton", font=("Noto Sans", 17))
         self.gun_connected = ttk.IntVar()
-        gun_connected_toggle = ttk.Checkbutton(
-            gun_connected_container,
+        self.gun_connection_toggle = ttk.Checkbutton(
+            master=gun_connected_container,
+            command=gun_connection_toggled,
             text="Connect Gun",
             style="Roundtoggle.Toolbutton",
         )
-        gun_connected_toggle.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
+        self.gun_connection_toggle.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
         # Authorize Button
         self.send_or_stop = ttk.IntVar()
@@ -317,34 +335,34 @@ class Dash(ttk.Frame):
         send_or_stop_button = ttk.Button(
             send_or_stop_container,
             text="Authorize",
-            bootstyle=PRIMARY,
+            bootstyle="primary"
         )
         send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
         # Emergency Stop: a button
-        self.Estop = ttk.IntVar()
-        Estop_container = ttk.Frame(master=rw_container)
-        Estop_container.pack(side=RIGHT, fill=X, expand=YES)
+        self.estop = ttk.IntVar()
+        estop_container = ttk.Frame(master=rw_container)
+        estop_container.pack(side=RIGHT, fill=X, expand=YES)
         dash_style.configure(
-            "Estop.TButton",
+            "estop.TButton",
             background=dash_style.colors.warning,
             foreground="black",
             font=("Noto Sans", 19),
         )
-        Estop_button = ttk.Button(
-            master=Estop_container,
+        estop_button = ttk.Button(
+            master=estop_container,
             text="Emergency Stop",
             command=self.on_estop,
-            style="Estop.TButton",
+            style="estop.TButton",
             width=40,
         )
-        Estop_button.pack(side=BOTTOM, padx=5, pady=5)
+        estop_button.pack(side=BOTTOM, padx=5, pady=5)
 
         # RW End
 
-        self.update_from_file_callback()
+        self.update_callback()
 
-        self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
+        self.update_job = self.after(self.refresh_rate, self.update_callback)
 
         ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=15)
 
@@ -381,15 +399,15 @@ class Dash(ttk.Frame):
 
     def create_buttons(self):
         """A method to setup the buttons at the bottom"""
-        container = ttk.Frame(self)
-        container.pack(fill=X, expand=YES, pady=(15, 10))
+        button_container = ttk.Frame(self)
+        button_container.pack(fill=X, expand=YES, pady=(15, 10))
 
         # Writes edited values to the json file
         edit_button = ttk.Button(
-            master=container,
+            master=button_container,
             text="Save",
             command=self.on_save,
-            bootstyle=PRIMARY,
+            bootstyle="primary",
             width=6,
         )
         edit_button.pack(side=RIGHT, padx=5)
@@ -397,10 +415,10 @@ class Dash(ttk.Frame):
 
         # Copies the entire json to the system clipboard
         copy_button = ttk.Button(
-            master=container,
+            master=button_container,
             text="Copy",
             command=self.on_copy,
-            bootstyle=PRIMARY,
+            bootstyle="primary",
             width=6,
         )
         copy_button.pack(side=RIGHT, padx=5)
@@ -408,16 +426,18 @@ class Dash(ttk.Frame):
 
         # Exits the program
         exit_button = ttk.Button(
-            master=container,
+            master=button_container,
             text="Exit",
             command=self.on_exit,
-            bootstyle=DANGER,
+            bootstyle="danger",
             width=6,
         )
         exit_button.pack(side=LEFT, padx=5)
 
     def on_estop(self):
-        pass
+        self.estop.set(1)
+        self.update_state["Editing"] = "on_estop"
+        self.update_state["Commit"] = "on_estop"
 
     def on_copy(self):
         data = {}
@@ -425,7 +445,7 @@ class Dash(ttk.Frame):
         data["gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
         data["Reservation_id"] = self.Reservation_id.get()
-        data["Estop"] = self.Estop.get()
+        data["estop"] = self.estop.get()
         data["Powerloss"] = self.Powerloss.get()
         data["Idtag"] = self.Idtag.get()
         data["Voltage"] = self.voltage.get()
@@ -438,14 +458,19 @@ class Dash(ttk.Frame):
 
     def on_save(self):
         data = {}
+        data["status_evse"] = self.status_evse.get()
         data["gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
-        data["Estop"] = self.Estop.get()
+        data["Reservation_id"] = self.Reservation_id.get()
+        data["estop"] = self.estop.get()
         data["Powerloss"] = self.Powerloss.get()
+        data["Idtag"] = self.Idtag.get()
         data["Voltage"] = self.voltage.get()
+        data["Active_Power"] = self.Active_Power.get()
         data["Current"] = self.current.get()
         data["Frequency"] = self.frequency.get()
         data["Temperature"] = self.temperature.get()
+        data["Power_factor"] = self.Power_factor.get()
 
         with open(self.json_file, "w") as json_file_write:
             logger.info(f"Commiting to file: {json.dumps(data, indent=4)}")
@@ -465,7 +490,7 @@ class Dash(ttk.Frame):
             self.gun_connected.set(data["gun_connected"])
             self.send_or_stop.set(data["send_or_stop"])
             self.Reservation_id.set(data["Reservation_id"])
-            self.Estop.set(data["Estop"])
+            self.estop.set(data["estop"])
 
             # Power Loss Indicator
             if data["Powerloss"] == 0:
@@ -482,11 +507,12 @@ class Dash(ttk.Frame):
             self.Power_factor.set(data["Power_factor"])
             self.temperature.set(data["Temperature"])
 
-    def update_from_file_callback(self):
-        if self.update_state["Commit"]:
+    def update_callback(self):
+        if self.update_state["Commit"] != "":
+            logger.info(f"Write request for: {self.update_state['Commit']}")
             self.on_save()
-            self.update_state["Commit"] = False
-            self.update_state["Editing"] = False
+            self.update_state["Commit"] = ""
+            self.update_state["Editing"] = ""
             logger.info(
                 f"Changes commited to file. Exiting Commit session and edit session."
             )
@@ -495,10 +521,12 @@ class Dash(ttk.Frame):
             logger.debug(f"Refreshing GUI from file contents: {self.json_file}")
             self.update_from_file()
 
-        self.update_job = self.after(self.refresh_rate, self.update_from_file_callback)
+        self.update_job = self.after(self.refresh_rate, self.update_callback)
 
 
 if __name__ == "__main__":
+    log_handler = logging.Handler()
+    log_handler.setLevel(logging.CRITICAL)
     arg_parser = argparse.ArgumentParser(
         prog="Status Monitor",
         description="Minimal GUI application to display status from given JSON file and manipulate EV Charger state",
@@ -509,11 +537,11 @@ if __name__ == "__main__":
         default="./memory.json",
         help="Path to the json file to monitor",
     )
-    arg_parser.add_argument("-c", "--config", help="Path to the GUI configuration file")
     arg_parser.add_argument(
         "-L",
         "--loglevel",
-        help="Specify the verbosity of logs: debug, info, warn, error, quiet",
+        default="DEBUG",
+        help="Specify the verbosity of logs: debug, info, warn, error, critical, quite",
     )
     arg_parser.add_argument(
         "-r",
@@ -523,6 +551,7 @@ if __name__ == "__main__":
     )
     arg_parser.add_argument("-w", "--width", default=600, help="GUI width")
     arg_parser.add_argument("-l", "--length", default=850, help="GUI height")
+    arg_parser.add_argument("-t", "--theme", default="black", help="Pick a theme for the GUI")
 
     arguments = arg_parser.parse_args()
 
@@ -535,8 +564,18 @@ if __name__ == "__main__":
 
     x = arguments.width
     y = arguments.length
-    app = ttk.Window("Status Monitor", "dashui", size=(x, y), resizable=(False, False))
 
-    # config_file = arg_parser.config
+    loglevel = arguments.loglevel
+
+    theme = arguments.theme
+
+    if theme not in STANDARD_THEMES:
+        if theme.strip().lower() == "dark":
+            theme = "black"
+        elif theme.strip().lower() == "light":
+            theme = "yeti"
+
+    app = ttk.Window(title="Status Monitor", themename=theme, size=(x, y), resizable=(False, False))
+
     Dash(app, json_file, arguments.refresh)
     app.mainloop()
