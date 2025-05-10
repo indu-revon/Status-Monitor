@@ -3,7 +3,7 @@
     "gun_connected": 0,
     "send_or_stop": 0,
     "Reservation_id": 0,
-    "Estop": 0,
+    "estop": 0,
     "Powerloss": 0,
     "Idtag": "SSLAKY7LXAK3M2VX",
     "Voltage": 223,
