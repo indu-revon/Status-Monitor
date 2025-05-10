@@ -6,8 +6,6 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH, YES, TOP, BOTTOM, LEFT, RIGHT, X
 from ttkbootstrap.themes.standard import STANDARD_THEMES
 import pyperclip
-from editable_label import EditableLabel
-
 
 
 from pathlib import Path
@@ -324,13 +322,34 @@ class Dash(ttk.Frame):
         self.gun_connection_toggle.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
         # Authorize Button
+        self.authorization_state = False
+        def authorization_check():
+            return True
+
+        def authorize():
+            if not self.authorization_state:
+                if authorization_check():
+                    self.send_or_stop_button.configure(text="De-Authorize")
+                    self.authorization_state = True
+                    if self.send_or_stop.get() == 0:
+                        self.send_or_stop.set(1)
+                        self.update_state["Editing"] = "authorize"
+                        self.update_state["Commit"] = "authorize"
+            else:
+                self.send_or_stop_button.configure(text="Authorize")
+                self.authorization_state = False
+                if self.send_or_stop.get() == 1:
+                    self.send_or_stop.set(0)
+                    self.update_state["Editing"] = "authorize"
+                    self.update_state["Commit"] = "authorize"
+
         self.send_or_stop = ttk.IntVar()
         send_or_stop_container = ttk.Frame(master=rw_coupled_container)
         send_or_stop_container.pack(side=RIGHT, fill=X, expand=YES)
-        send_or_stop_button = ttk.Button(
-            send_or_stop_container, text="Authorize", bootstyle="primary"
+        self.send_or_stop_button = ttk.Button(
+            master=send_or_stop_container, text="Authorize", command=authorize, bootstyle="primary"
         )
-        send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
+        self.send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
         # Emergency Stop: a button
         self.estop = ttk.IntVar()
@@ -489,8 +508,6 @@ class Dash(ttk.Frame):
 
 
 if __name__ == "__main__":
-    log_handler = logging.Handler()
-    log_handler.setLevel(logging.CRITICAL)
     arg_parser = argparse.ArgumentParser(
         prog="Status Monitor",
         description="Minimal GUI application to display status from given JSON file and manipulate EV Charger state",
@@ -547,6 +564,7 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
+    logging.getLogger().setLevel(loglevel)
     
     Dash(app, json_file, arguments.refresh)
     app.mainloop()
