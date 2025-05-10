@@ -1,6 +1,6 @@
 {
     "status_evse": "A",
-    "gun_connected": 0,
+    "gun_connected": 1,
     "send_or_stop": 0,
     "reservation_id": 0,
     "estop": 0,
@@ -8,7 +8,7 @@
     "Idtag": "SSLAKY7LXAK3M2VX",
     "Voltage": 223,
     "Current": 25,
-    "Active_Power": 0,
+    "active_power": 0,
     "Frequency": 0,
     "Power_factor": 0,
     "Temperature": 40
