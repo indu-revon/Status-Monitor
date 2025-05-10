@@ -9,8 +9,6 @@ import pyperclip
 from editable_label import EditableLabel
 
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
 
 from pathlib import Path
 
@@ -547,5 +545,8 @@ if __name__ == "__main__":
         title="Status Monitor", themename=theme, size=(x, y), resizable=(False, False)
     )
 
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
+    
     Dash(app, json_file, arguments.refresh)
     app.mainloop()
