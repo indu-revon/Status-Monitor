@@ -152,8 +152,6 @@ class Dash(ttk.Frame):
 
         # 2nd container end
 
-        # 3rd container
-
         # ID Tag
         id_tag_container = ttk.Frame(master=ro_container)
         id_tag_container.pack(**ro_child_container_pack_params)
@@ -364,35 +362,6 @@ class Dash(ttk.Frame):
         ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=15)
 
         self.create_buttons()
-
-    # Format json key name for GUI
-    #   def format_json_key(self, string):
-    #       return " ".join(word.title() for word in string.split("_"))
-
-    #   def create_entry(self, label, variable):
-    #       """Create a row for one json key-value pair"""
-    #       container = ttk.Frame(self)
-    #       container.pack(fill=X, expand=YES, pady=5)
-
-    #       key_label = ttk.Label(
-    #           master=container,
-    #           text=self.format_json_key(label),
-    #           width=15,
-    #           bootstyle="primary",
-    #       )
-    #       key_label.pack(side=LEFT, fill=X, padx=(15, 15))
-
-    #       # Builtin label border styles look dated. This is a simple trick to
-    #       # Place the label in a frame with a themed color to 'simulate' a border.
-    #       #
-    #       editable_container = ttk.Frame(master=container, bootstyle="dark")
-    #       editable_container.pack(side=LEFT, padx=(5, 5), fill=X, expand=YES)
-    #       editable = EditableLabel(
-    #           master=editable_container,
-    #           exposevariable=variable,
-    #           update_state=self.update_state,
-    #       )
-    #       editable.pack(side=LEFT, padx=1, pady=1, fill=BOTH, expand=YES)
 
     def create_buttons(self):
         """A method to setup the buttons at the bottom"""
