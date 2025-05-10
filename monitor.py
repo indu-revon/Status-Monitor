@@ -10,9 +10,7 @@ from editable_label import EditableLabel
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    encoding="utf-8", format="[%(funcName)s() ] %(message)s"
-)
+logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
 
 from pathlib import Path
 
@@ -174,7 +172,7 @@ class Dash(ttk.Frame):
         self.Powerloss_container = ttk.Frame(master=ro_container)
         self.Powerloss_container.pack(**ro_child_container_pack_params)
 
-        # This is just a TTK frame. No other elegant method available 
+        # This is just a TTK frame. No other elegant method available
         # to get a themed rectangle to change colors.
         Powerloss_LED = ttk.Frame(
             master=self.Powerloss_container, style="danger.TFrame"
@@ -302,6 +300,7 @@ class Dash(ttk.Frame):
 
         # This should be a toggle
         self.gun_connection_toggle_state = False
+
         def gun_connection_toggled():
             if not self.gun_connection_toggle_state:
                 self.gun_connection_toggle_state = True
@@ -312,7 +311,7 @@ class Dash(ttk.Frame):
             else:
                 self.gun_connection_toggle_state = False
                 if self.gun_connected.get() == 1:
-                    self.gun_connected.set(0) 
+                    self.gun_connected.set(0)
                     self.update_state["Editing"] = "gun_connection_toggled"
                     self.update_state["Commit"] = "gun_connected_toggled"
 
@@ -333,9 +332,7 @@ class Dash(ttk.Frame):
         send_or_stop_container = ttk.Frame(master=rw_coupled_container)
         send_or_stop_container.pack(side=RIGHT, fill=X, expand=YES)
         send_or_stop_button = ttk.Button(
-            send_or_stop_container,
-            text="Authorize",
-            bootstyle="primary"
+            send_or_stop_container, text="Authorize", bootstyle="primary"
         )
         send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
@@ -466,11 +463,11 @@ class Dash(ttk.Frame):
         data["Powerloss"] = self.Powerloss.get()
         data["Idtag"] = self.Idtag.get()
         data["Voltage"] = self.voltage.get()
-        data["Active_Power"] = self.Active_Power.get()
         data["Current"] = self.current.get()
+        data["Active_Power"] = self.Active_Power.get()
         data["Frequency"] = self.frequency.get()
-        data["Temperature"] = self.temperature.get()
         data["Power_factor"] = self.Power_factor.get()
+        data["Temperature"] = self.temperature.get()
 
         with open(self.json_file, "w") as json_file_write:
             logger.info(f"Commiting to file: {json.dumps(data, indent=4)}")
@@ -551,7 +548,9 @@ if __name__ == "__main__":
     )
     arg_parser.add_argument("-w", "--width", default=600, help="GUI width")
     arg_parser.add_argument("-l", "--length", default=850, help="GUI height")
-    arg_parser.add_argument("-t", "--theme", default="black", help="Pick a theme for the GUI")
+    arg_parser.add_argument(
+        "-t", "--theme", default="black", help="Pick a theme for the GUI"
+    )
 
     arguments = arg_parser.parse_args()
 
@@ -575,7 +574,9 @@ if __name__ == "__main__":
         elif theme.strip().lower() == "light":
             theme = "yeti"
 
-    app = ttk.Window(title="Status Monitor", themename=theme, size=(x, y), resizable=(False, False))
+    app = ttk.Window(
+        title="Status Monitor", themename=theme, size=(x, y), resizable=(False, False)
+    )
 
     Dash(app, json_file, arguments.refresh)
     app.mainloop()
