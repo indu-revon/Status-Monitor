@@ -1,7 +1,7 @@
 """
-    Status monitor. A GUI application based on ttk/ttkbootstrap 
-    to monitor EV charger state via a provided json file and 
-    controls are provided to perform basic actions.
+Status monitor. A GUI application based on ttk/ttkbootstrap
+to monitor EV charger state via a provided json file and
+controls are provided to perform basic actions.
 """
 
 import argparse
@@ -20,8 +20,9 @@ PATH = Path(__file__).parent / "assets"
 
 class Dash(ttk.Frame):
     """
-        All the UI elements are embedded in the Dash Class. 
+    All the UI elements are embedded in the Dash Class.
     """
+
     def __init__(self, master, json_file, refresh_rate):
         super().__init__(master, padding=(5, 5))
         self.pack(fill=BOTH, expand=YES)
@@ -165,7 +166,9 @@ class Dash(ttk.Frame):
         id_tag_key_label.pack(**key_label_pack_params)
 
         self.id_tag = ttk.StringVar()
-        id_tag_value_label = ttk.Label(master=id_tag_container, textvariable=self.id_tag)
+        id_tag_value_label = ttk.Label(
+            master=id_tag_container, textvariable=self.id_tag
+        )
         id_tag_value_label.pack(**value_label_pack_params)
 
         # This should be a visual indicator for powerloss occurence
@@ -355,7 +358,10 @@ class Dash(ttk.Frame):
         send_or_stop_container = ttk.Frame(master=rw_coupled_container)
         send_or_stop_container.pack(side=RIGHT, fill=X, expand=YES)
         self.send_or_stop_button = ttk.Button(
-            master=send_or_stop_container, text="Authorize", command=authorize, bootstyle="primary"
+            master=send_or_stop_container,
+            text="Authorize",
+            command=authorize,
+            bootstyle="primary",
         )
         self.send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
@@ -426,13 +432,13 @@ class Dash(ttk.Frame):
         exit_button.pack(side=LEFT, padx=5)
 
     def on_estop(self):
-        """ Callback for emergency stop button """
+        """Callback for emergency stop button"""
         self.estop.set(1)
         self.update_state["Editing"] = "on_estop"
         self.update_state["Commit"] = "on_estop"
 
     def on_copy(self):
-        """ Callback for copy button """
+        """Callback for copy button"""
         data = {}
         data["status_evse"] = self.status_evse.get()
         data["gun_connected"] = self.gun_connected.get()
@@ -450,8 +456,8 @@ class Dash(ttk.Frame):
         pyperclip.copy(json.dumps(data, indent=4))
 
     def on_save(self):
-        """ Main method used to update the json file contents
-            based on changes in the GUI
+        """Main method used to update the json file contents
+        based on changes in the GUI
         """
         data = {}
         data["status_evse"] = self.status_evse.get()
@@ -505,12 +511,12 @@ class Dash(ttk.Frame):
             self.temperature.set(data["Temperature"])
 
     def update_callback(self):
-        """ A wrapper around update_from_file which acts as the GUI periodical callback
-            and manages the state of data edited in the GUI and data present 
-            in the source json file
+        """A wrapper around update_from_file which acts as the GUI periodical callback
+        and manages the state of data edited in the GUI and data present
+        in the source json file
         """
         if self.update_state["Commit"] != "":
-            logger.info("Write request for: %s", self.update_state['Commit'])
+            logger.info("Write request for: %s", self.update_state["Commit"])
             self.on_save()
             self.update_state["Commit"] = ""
             self.update_state["Editing"] = ""
