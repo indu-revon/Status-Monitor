@@ -214,10 +214,14 @@ class Dash(ttk.Frame):
         )
         voltage_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        voltage_scale = ttk.Scale(
-            master=voltage_container, variable=self.voltage, from_=0, to=400, value=200
+        voltage_scale = ttk.Progressbar(
+            master=voltage_container,
+            variable=self.voltage,
+            maximum=240,
+            value=0,
+            mode="determinate",
         )
-        voltage_scale.pack(side=RIGHT, fill=X, padx=5, pady=15, expand=YES)
+        voltage_scale.pack(side=RIGHT, padx=5, pady=15, fill=X, expand=YES)
 
         # current
         self.current = ttk.IntVar()
@@ -235,8 +239,8 @@ class Dash(ttk.Frame):
         )
         current_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        current_scale = ttk.Scale(
-            master=current_container, variable=self.current, from_=0, to=400, value=200
+        current_scale = ttk.Progressbar(
+            master=current_container, variable=self.current, value=0, maximum=25
         )
         current_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
@@ -256,12 +260,8 @@ class Dash(ttk.Frame):
         )
         frequency_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        frequency_scale = ttk.Scale(
-            master=frequency_container,
-            variable=self.frequency,
-            from_=0,
-            to=400,
-            value=200,
+        frequency_scale = ttk.Progressbar(
+            master=frequency_container, variable=self.frequency, value=0, maximum=60
         )
         frequency_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
@@ -284,12 +284,8 @@ class Dash(ttk.Frame):
         )
         temperature_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        temperature_scale = ttk.Scale(
-            master=temperature_container,
-            variable=self.temperature,
-            from_=0,
-            to=400,
-            value=200,
+        temperature_scale = ttk.Progressbar(
+            master=temperature_container, variable=self.temperature, value=0, maximum=50
         )
         temperature_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
@@ -320,9 +316,9 @@ class Dash(ttk.Frame):
                     self.update_state["Commit"] = "gun_connected_toggled"
 
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
-        gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
-        dash_style.configure("TCheckbutton", font=("Noto Sans", 17))
+        gun_connected_container.pack(side=LEFT, expand=YES)
         self.gun_connected = ttk.IntVar()
+        dash_style.configure("Roundtoggle.Toolbutton", font=("Noto Sans", 15))
         self.gun_connection_toggle = ttk.Checkbutton(
             master=gun_connected_container,
             command=gun_connection_toggled,
@@ -534,7 +530,8 @@ class Dash(ttk.Frame):
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(
         prog="Status Monitor",
-        description="Minimal GUI application to display status from given JSON file and manipulate EV Charger state",
+        description="Minimal GUI application to display status \
+                     from given JSON file and manipulate EV Charger state",
     )
     arg_parser.add_argument(
         "-s",
@@ -564,8 +561,15 @@ if __name__ == "__main__":
 
     loglevel = arguments.loglevel
     logger = logging.getLogger(__name__)
-    logging.basicConfig(encoding="utf-8", format="[%(funcName)s() ] %(message)s")
-    logging.getLogger().setLevel(loglevel)
+    logging.basicConfig(
+        encoding="utf-8", format="[%(levelname)s][%(funcName)s() ] %(message)s"
+    )
+
+    if loglevel.strip().upper() in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+        logging.getLogger().setLevel(loglevel)
+    else:
+        logger.error("Unknown value %s passed for logging level", loglevel)
+        sys.exit(1)
 
     json_file = arguments.source
     provided_path = Path(json_file)
