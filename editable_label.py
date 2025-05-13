@@ -4,11 +4,11 @@ editing and saving the Label text. Useful in scenarios
 where editing is desired and at the same time a
 separate input box is not.
 """
+
 import logging
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap.constants import END
 import pyperclip
-
 
 
 class EditableLabel(ttk.Label):
@@ -17,11 +17,23 @@ class EditableLabel(ttk.Label):
     and supports editing, copying from, pasting to the label field.
     An entry widget is overlaid on activation via double-click.
     """
-    def __init__(self, master, exposevariable, update_state, label_name, loglevel, *args, **kwargs):
+
+    def __init__(
+        self,
+        master,
+        exposevariable,
+        update_state,
+        label_name,
+        loglevel,
+        *args,
+        **kwargs
+    ):
         super().__init__(master, textvariable=exposevariable, *args, **kwargs)
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(
-            encoding="utf-8", format="[%(levelname)s][%(funcName)s() ] %(message)s", level=loglevel
+            encoding="utf-8",
+            format="[%(levelname)s][%(funcName)s() ] %(message)s",
+            level=loglevel,
         )
         self.expose_variable = exposevariable
         self.update_state = update_state
