@@ -13,6 +13,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH, YES, TOP, BOTTOM, LEFT, RIGHT, X
 from ttkbootstrap.themes.standard import STANDARD_THEMES
 import pyperclip
+from editable_label import EditableLabel
 
 
 PATH = Path(__file__).parent / "assets"
@@ -207,9 +208,12 @@ class Dash(ttk.Frame):
             master=voltage_container, text="Voltage", width=13, bootstyle="primary"
         )
         voltage_label.pack(side=LEFT, fill=X, padx=(5, 5))
-        voltage_value_label = ttk.Label(
+        voltage_value_label = EditableLabel(
             master=voltage_container,
-            textvariable=self.voltage,
+            exposevariable=self.voltage,
+            update_state=self.update_state,
+            label_name="voltage",
+            loglevel=loglevel,
             width=5,
         )
         voltage_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
@@ -232,11 +236,15 @@ class Dash(ttk.Frame):
         )
         current_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        current_value_label = ttk.Label(
+        current_value_label = EditableLabel(
             master=current_container,
-            textvariable=self.current,
+            exposevariable=self.current,
+            update_state=self.update_state,
+            label_name="current",
+            loglevel=loglevel,
             width=5,
         )
+
         current_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
         current_scale = ttk.Progressbar(
@@ -253,11 +261,15 @@ class Dash(ttk.Frame):
         )
         frequency_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
-        frequency_value_label = ttk.Label(
+        frequency_value_label = EditableLabel(
             master=frequency_container,
-            textvariable=self.frequency,
+            exposevariable=self.frequency,
+            update_state=self.update_state,
+            label_name="frequency",
+            loglevel=loglevel,
             width=5,
         )
+
         frequency_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
         frequency_scale = ttk.Progressbar(
@@ -276,10 +288,12 @@ class Dash(ttk.Frame):
             bootstyle="primary",
         )
         temperature_label.pack(side=LEFT, fill=X, padx=(5, 5))
-
-        temperature_value_label = ttk.Label(
+        temperature_value_label = EditableLabel(
             master=temperature_container,
-            textvariable=self.temperature,
+            exposevariable=self.temperature,
+            update_state=self.update_state,
+            label_name="temperature",
+            loglevel=loglevel,
             width=5,
         )
         temperature_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
@@ -298,7 +312,7 @@ class Dash(ttk.Frame):
         rw_coupled_container = ttk.Frame(master=rw_container)
         rw_coupled_container.pack(side=TOP, fill=X, pady=10, expand=YES)
 
-        # This should be a toggle
+        # A toggle to switch the connection state
         self.gun_connection_toggle_state = False
 
         def gun_connection_toggled():
