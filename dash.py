@@ -26,10 +26,6 @@ class Dash(ttk.Frame):
             format="[%(levelname)s][%(funcName)s() ] %(message)s",
             level=loglevel,
         )
-        # Singleton class. This will be used later to customise other elements.
-        dash_style = ttk.Style()
-        dash_style.configure(".", font=("Noto Sans", 15))
-
         self.update_state = {"Editing": "", "Commit": ""}
         self.json_file = json_file
         self.refresh_rate = refresh_rate
@@ -38,16 +34,19 @@ class Dash(ttk.Frame):
             ttk.PhotoImage(name="warning_icon", file=PATH / "warning_icon_32x32.png")
         ]
 
+
+        # Singleton class. This will be used later to customise other elements.
+        dash_style = ttk.Style()
+        dash_style.configure(".", font=("Noto Sans", 15))
+
         # form header
-        header_text = "State Monitor"
-        header = ttk.Label(
+        ttk.Label(
             master=self,
             font=("Noto Sans", 23),
-            text=header_text,
+            text="State Monitor",
             width=12,
             bootstyle="primary",
-        )
-        header.pack(side=TOP, fill=X, padx=15, pady=10)
+        ).pack(side=TOP, fill=X, padx=15, pady=10)
 
         ttk.Separator(master=self, bootstyle="primary").pack(fill=X, pady=10)
 
