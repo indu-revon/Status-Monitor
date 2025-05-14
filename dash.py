@@ -518,7 +518,7 @@ class Dash(ttk.Frame):
                 self.gun_connected.set(0)
                 self.gun_connection_toggle.configure(text="Connect Gun")
                 self.update_state["Editing"] = "gun_connection_toggled"
-                self.update_state["Commit"] = "gun_connected_toggled"
+                self.update_state["Commit"] = "gun_connection_toggled"
 
     def on_copy(self):
         """Callback for copy button"""
