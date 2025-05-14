@@ -40,7 +40,7 @@ class Dash(ttk.Frame):
 
         # form header
         header_container = ttk.Frame(master=self)
-        header_container.pack( side=TOP,  fill=X, expand=YES)
+        header_container.pack(side=TOP, fill=X, expand=YES)
         ttk.Label(
             master=header_container,
             font=("Noto Sans", 23),
@@ -50,7 +50,7 @@ class Dash(ttk.Frame):
         ).pack(side=LEFT, fill=X, padx=15, pady=5)
 
         self.network = ttk.IntVar()
-        self. network_state_label = ttk.Label(
+        self.network_state_label = ttk.Label(
             master=header_container,
             font=("Noto Sans", 13),
             text="Online",
@@ -390,6 +390,7 @@ class Dash(ttk.Frame):
 
         # Authorize Button
         self.authorization_state = False
+
         # A method to authorize: implementation specific, GUI independent
         def authorization_check():
             return True
