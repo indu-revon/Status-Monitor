@@ -569,6 +569,7 @@ class Dash(ttk.Frame):
             self.estop.set(data["Estop"])
 
             # Power Loss Indicator
+            self.powerloss.set(data["Powerloss"])
             if data["Powerloss"] == 0:
                 if self.powerloss_container.winfo_manager():
                     self.powerloss_container.pack_forget()
