@@ -378,7 +378,7 @@ class Dash(ttk.Frame):
                     self.update_state["Commit"] = "gun_connected_toggled"
 
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
-        gun_connected_container.pack(side=LEFT, expand=YES)
+        gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
         self.gun_connected = ttk.IntVar()
         self.gun_connection_toggle = ttk.Button(
             master=gun_connected_container,
@@ -391,36 +391,13 @@ class Dash(ttk.Frame):
         # Authorize Button
         self.authorization_state = False
 
-        # A method to authorize: implementation specific, GUI independent
-        def authorization_check():
-            return True
-
-        def authorize():
-            if not self.authorization_state:
-                if authorization_check():
-                    self.send_or_stop_button.configure(text="De-Authorize")
-                    self.send_or_stop_button.configure(bootstyle="success")
-                    self.authorization_state = True
-                    if self.send_or_stop.get() == 0:
-                        self.send_or_stop.set(1)
-                        self.update_state["Editing"] = "authorize"
-                        self.update_state["Commit"] = "authorize"
-            else:
-                self.send_or_stop_button.configure(text="Authorize")
-                self.send_or_stop_button.configure(bootstyle="primary")
-                self.authorization_state = False
-                if self.send_or_stop.get() == 1:
-                    self.send_or_stop.set(0)
-                    self.update_state["Editing"] = "authorize"
-                    self.update_state["Commit"] = "authorize"
-
         self.send_or_stop = ttk.IntVar()
         send_or_stop_container = ttk.Frame(master=rw_coupled_container)
         send_or_stop_container.pack(side=RIGHT, fill=X, expand=YES)
         self.send_or_stop_button = ttk.Button(
             master=send_or_stop_container,
             text="Authorize",
-            command=authorize,
+            command=self.authorize,
             bootstyle="primary",
         )
         self.send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
@@ -469,10 +446,10 @@ class Dash(ttk.Frame):
         # Copies the entire json to the system clipboard
         copy_button = ttk.Button(
             master=button_container,
-            text="Copy",
+            text="Copy JSON",
             command=self.on_copy,
             bootstyle="primary",
-            width=6,
+            width=11,
         )
         copy_button.pack(side=RIGHT, padx=5)
         copy_button.focus_set()
@@ -486,6 +463,32 @@ class Dash(ttk.Frame):
             width=6,
         )
         exit_button.pack(side=LEFT, padx=5)
+
+    # A method to authorize: implementation specific, GUI independent
+    def authorization_check(self):
+        """ Place holder method to interact with the authentication mechanism
+        and return a boolean
+        """
+        return True
+
+    def authorize(self):
+        if not self.authorization_state:
+            if self.authorization_check():
+                self.send_or_stop_button.configure(text="De-Authorize")
+                self.send_or_stop_button.configure(bootstyle="success")
+                self.authorization_state = True
+                if self.send_or_stop.get() == 0:
+                    self.send_or_stop.set(1)
+                    self.update_state["Editing"] = "authorize"
+                    self.update_state["Commit"] = "authorize"
+        else:
+            self.send_or_stop_button.configure(text="Authorize")
+            self.send_or_stop_button.configure(bootstyle="primary")
+            self.authorization_state = False
+            if self.send_or_stop.get() == 1:
+                self.send_or_stop.set(0)
+                self.update_state["Editing"] = "authorize"
+                self.update_state["Commit"] = "authorize"
 
     def on_estop(self):
         """Callback for emergency stop button"""
