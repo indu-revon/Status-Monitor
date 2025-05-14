@@ -361,7 +361,6 @@ class Dash(ttk.Frame):
         # A toggle to switch the connection state
         self.gun_connection_toggle_state = False
 
-
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
         gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
         self.gun_connected = ttk.IntVar()
@@ -464,7 +463,7 @@ class Dash(ttk.Frame):
 
     # A method to authorize: implementation specific, GUI independent
     def authorization_check(self):
-        """ Place holder method to interact with the authentication mechanism
+        """Place holder method to interact with the authentication mechanism
         and return a boolean
         """
         return True
