@@ -432,17 +432,6 @@ class Dash(ttk.Frame):
         button_container = ttk.Frame(self)
         button_container.pack(fill=X, expand=YES, pady=(15, 10))
 
-        # Writes edited values to the json file
-        edit_button = ttk.Button(
-            master=button_container,
-            text="Save",
-            command=self.on_save,
-            bootstyle="primary",
-            width=6,
-        )
-        edit_button.pack(side=RIGHT, padx=5)
-        edit_button.focus_set()
-
         # Copies the entire json to the system clipboard
         copy_button = ttk.Button(
             master=button_container,
