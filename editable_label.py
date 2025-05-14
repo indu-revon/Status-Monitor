@@ -76,7 +76,9 @@ class EditableLabel(ttk.Label):
         self.entry.place_forget()
 
     def edit_stop(self, event=None):
-        """Forget the entry widget and abort the edit session when user cancels an edit session by changing focus"""
+        """Forget the entry widget and abort the edit session when user
+        cancels an edit session by changing focus
+        """
         self.configure(text=self.entry.get())
         self.update_state["Editing"] = ""
         self.update_state["Commit"] = ""
