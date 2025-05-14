@@ -409,25 +409,30 @@ class Dash(ttk.Frame):
         # RW End
 
         self.update_from_file()
-
         # Initialize authorize button
         if self.send_or_stop.get() == 0:
+            self.authorization_state = False
             self.send_or_stop_button.configure(text="Authorize")
             self.send_or_stop_button.configure(bootstyle="primary")
         elif self.send_or_stop.get() == 1:
+            self.authorization_state = True
             self.send_or_stop_button.configure(text="De-Authorize")
             self.send_or_stop_button.configure(bootstyle="success")
 
         # Initialize gun connection button
         if self.gun_connected.get() == 0:
+            self.gun_connection_toggle_state = False
             self.gun_connection_toggle.configure(text="Connect Gun")
         elif self.gun_connected.get() == 1:
+            self.gun_connection_toggle_state = True
             self.gun_connection_toggle.configure(text="Disconnect Gun")
 
         # Initialize emergency stop button
         if self.estop.get() == 0:
+            self.estop_state = False
             self.estop_button.configure(text="Emergency Stop")
         elif self.estop.get() == 1:
+            self.estop_state = True
             self.estop_button.configure(text="Release")
 
         self.update_callback()
