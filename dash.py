@@ -34,7 +34,6 @@ class Dash(ttk.Frame):
             ttk.PhotoImage(name="warning_icon", file=PATH / "warning_icon_32x32.png")
         ]
 
-
         # Singleton class. This will be used later to customise other elements.
         dash_style = ttk.Style()
         dash_style.configure(".", font=("Noto Sans", 15))
@@ -448,17 +447,17 @@ class Dash(ttk.Frame):
         """Callback for copy button"""
         data = {}
         data["status_evse"] = self.status_evse.get()
-        data["gun_connected"] = self.gun_connected.get()
+        data["Gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
-        data["reservation_id"] = self.reservation_id.get()
-        data["estop"] = self.estop.get()
-        data["powerloss"] = self.powerloss.get()
-        data["id_tag"] = self.id_tag.get()
+        data["Reservation_id"] = self.reservation_id.get()
+        data["Estop"] = self.estop.get()
+        data["Powerloss"] = self.powerloss.get()
+        data["Idtag"] = self.id_tag.get()
         data["Voltage"] = self.voltage.get()
         data["Current"] = self.current.get()
-        data["active_power"] = self.active_power.get()
+        data["Active_Power"] = self.active_power.get()
         data["Frequency"] = self.frequency.get()
-        data["power_factor"] = self.power_factor.get()
+        data["Power_factor"] = self.power_factor.get()
         data["Temperature"] = self.temperature.get()
         pyperclip.copy(json.dumps(data, indent=4))
 
@@ -468,17 +467,17 @@ class Dash(ttk.Frame):
         """
         data = {}
         data["status_evse"] = self.status_evse.get()
-        data["gun_connected"] = self.gun_connected.get()
+        data["Gun_connected"] = self.gun_connected.get()
         data["send_or_stop"] = self.send_or_stop.get()
-        data["reservation_id"] = self.reservation_id.get()
-        data["estop"] = self.estop.get()
-        data["powerloss"] = self.powerloss.get()
-        data["id_tag"] = self.id_tag.get()
+        data["Reservation_id"] = self.reservation_id.get()
+        data["Estop"] = self.estop.get()
+        data["Powerloss"] = self.powerloss.get()
+        data["Idtag"] = self.id_tag.get()
         data["Voltage"] = self.voltage.get()
         data["Current"] = self.current.get()
-        data["active_power"] = self.active_power.get()
+        data["Active_Power"] = self.active_power.get()
         data["Frequency"] = self.frequency.get()
-        data["power_factor"] = self.power_factor.get()
+        data["Power_factor"] = self.power_factor.get()
         data["Temperature"] = self.temperature.get()
 
         with open(self.json_file, "w", encoding="utf-8") as json_file_write:
@@ -497,24 +496,24 @@ class Dash(ttk.Frame):
             data = json.load(json_fp)
 
             self.status_evse.set(data["status_evse"])
-            self.gun_connected.set(data["gun_connected"])
+            self.gun_connected.set(data["Gun_connected"])
             self.send_or_stop.set(data["send_or_stop"])
-            self.reservation_id.set(data["reservation_id"])
-            self.estop.set(data["estop"])
+            self.reservation_id.set(data["Reservation_id"])
+            self.estop.set(data["Estop"])
 
             # Power Loss Indicator
-            if data["powerloss"] == 0:
+            if data["Powerloss"] == 0:
                 if self.powerloss_container.winfo_manager():
                     self.powerloss_container.pack_forget()
-            elif data["powerloss"] == 1:
+            elif data["Powerloss"] == 1:
                 self.powerloss_container.pack(side=LEFT, fill=X, expand=YES)
 
-            self.id_tag.set(data["id_tag"])
+            self.id_tag.set(data["Idtag"])
             self.voltage.set(data["Voltage"])
             self.current.set(data["Current"])
-            self.active_power.set(data["active_power"])
+            self.active_power.set(data["Active_Power"])
             self.frequency.set(data["Frequency"])
-            self.power_factor.set(data["power_factor"])
+            self.power_factor.set(data["Power_factor"])
             self.temperature.set(data["Temperature"])
 
     def update_callback(self):
