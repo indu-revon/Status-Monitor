@@ -403,6 +403,8 @@ class Dash(ttk.Frame):
         self.send_or_stop_button.pack(side=LEFT, fill=X, padx=10, pady=10, expand=YES)
 
         # Emergency Stop: a button
+        self.estop_state = False
+
         self.estop = ttk.IntVar()
         estop_container = ttk.Frame(master=rw_container)
         estop_container.pack(side=RIGHT, fill=X, expand=YES)
@@ -481,10 +483,20 @@ class Dash(ttk.Frame):
 
     def on_estop(self):
         """Callback for emergency stop button"""
-        self.estop.set(1)
-        self.estop_button.configure(text="Release")
-        self.update_state["Editing"] = "on_estop"
-        self.update_state["Commit"] = "on_estop"
+        if not self.estop_state:
+            self.estop_state = True
+            if self.estop.get() == 0:
+                self.estop.set(1)
+                self.estop_button.configure(text="Release")
+                self.update_state["Editing"] = "on_estop"
+                self.update_state["Commit"] = "on_estop"
+        else:
+            self.estop_state = False
+            if self.estop.get() == 1:
+                self.estop.set(0)
+                self.estop_button.configure(text="Emergency Stop")
+                self.update_state["Editing"] = "on_estop"
+                self.update_state["Commit"] = "on_estop"
 
     def on_copy(self):
         """Callback for copy button"""
