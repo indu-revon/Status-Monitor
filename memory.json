@@ -1,15 +1,18 @@
 {
-    "status_evse": "A",
-    "gun_connected": 1,
-    "send_or_stop": 0,
-    "reservation_id": 0,
-    "estop": 0,
-    "powerloss": 0,
-    "id_tag": "SSLAKY7LXAK3M2VX",
+    "status_evse": "P",
+    "Gun_connected": 1,
+    "send_or_stop": 1,
+    "Network": 1,
+    "Reservation_id": 0,
+    "Estop": 0,
+    "Powerloss": 0,
+    "Idtag": "SSLAKY7LXAK3M2VX",
     "Voltage": 223,
     "Current": 25,
-    "active_power": 0,
+    "Active_Power": 0,
     "Frequency": 0,
-    "power_factor": 0,
-    "Temperature": 40
+    "Power_factor": 0,
+    "Temperature": 40,
+    "offered_current": 32.0,
+    "meter_reading": 0
 }
