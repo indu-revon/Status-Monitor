@@ -361,28 +361,13 @@ class Dash(ttk.Frame):
         # A toggle to switch the connection state
         self.gun_connection_toggle_state = False
 
-        def gun_connection_toggled():
-            if not self.gun_connection_toggle_state:
-                self.gun_connection_toggle_state = True
-                if self.gun_connected.get() == 0:
-                    self.gun_connected.set(1)
-                    self.gun_connection_toggle.configure(text="Disconnect Gun")
-                    self.update_state["Editing"] = "gun_connection_toggled"
-                    self.update_state["Commit"] = "gun_connection_toggled"
-            else:
-                self.gun_connection_toggle_state = False
-                if self.gun_connected.get() == 1:
-                    self.gun_connected.set(0)
-                    self.gun_connection_toggle.configure(text="Connect Gun")
-                    self.update_state["Editing"] = "gun_connection_toggled"
-                    self.update_state["Commit"] = "gun_connected_toggled"
 
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
         gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
         self.gun_connected = ttk.IntVar()
         self.gun_connection_toggle = ttk.Button(
             master=gun_connected_container,
-            command=gun_connection_toggled,
+            command=self.gun_connection_toggled,
             text="Connect Gun",
             style="primary",
         )
@@ -423,6 +408,28 @@ class Dash(ttk.Frame):
         )
         self.estop_button.pack(side=BOTTOM, padx=5, pady=5)
         # RW End
+
+        self.update_from_file()
+
+        # Initialize authorize button
+        if self.send_or_stop.get() == 0:
+            self.send_or_stop_button.configure(text="Authorize")
+            self.send_or_stop_button.configure(bootstyle="primary")
+        elif self.send_or_stop.get() == 1:
+            self.send_or_stop_button.configure(text="De-Authorize")
+            self.send_or_stop_button.configure(bootstyle="success")
+
+        # Initialize gun connection button
+        if self.gun_connected.get() == 0:
+            self.gun_connection_toggle.configure(text="Connect Gun")
+        elif self.gun_connected.get() == 1:
+            self.gun_connection_toggle.configure(text="Disconnect Gun")
+
+        # Initialize emergency stop button
+        if self.estop.get() == 0:
+            self.estop_button.configure(text="Emergency Stop")
+        elif self.estop.get() == 1:
+            self.estop_button.configure(text="Release")
 
         self.update_callback()
         self.update_job = self.after(self.refresh_rate, self.update_callback)
@@ -497,6 +504,22 @@ class Dash(ttk.Frame):
                 self.estop_button.configure(text="Emergency Stop")
                 self.update_state["Editing"] = "on_estop"
                 self.update_state["Commit"] = "on_estop"
+
+    def gun_connection_toggled(self):
+        if not self.gun_connection_toggle_state:
+            self.gun_connection_toggle_state = True
+            if self.gun_connected.get() == 0:
+                self.gun_connected.set(1)
+                self.gun_connection_toggle.configure(text="Disconnect Gun")
+                self.update_state["Editing"] = "gun_connection_toggled"
+                self.update_state["Commit"] = "gun_connection_toggled"
+        else:
+            self.gun_connection_toggle_state = False
+            if self.gun_connected.get() == 1:
+                self.gun_connected.set(0)
+                self.gun_connection_toggle.configure(text="Connect Gun")
+                self.update_state["Editing"] = "gun_connection_toggled"
+                self.update_state["Commit"] = "gun_connected_toggled"
 
     def on_copy(self):
         """Callback for copy button"""
