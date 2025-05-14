@@ -178,7 +178,7 @@ class Dash(ttk.Frame):
         )
         offered_current_key_label.pack(**key_label_pack_params)
 
-        self.offered_current = ttk.IntVar()
+        self.offered_current = ttk.DoubleVar()
         offered_current_value_label = ttk.Label(
             master=offered_current_container,
             textvariable=self.offered_current,
