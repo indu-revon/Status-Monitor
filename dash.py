@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import BOTH, YES, TOP, BOTTOM, LEFT, RIGHT, X
@@ -19,6 +18,7 @@ class Dash(ttk.Frame):
     def __init__(self, master, json_file, refresh_rate, loglevel):
         super().__init__(master, padding=(5, 5))
         self.pack(fill=BOTH, expand=YES)
+        self.data_var = {}
 
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(
@@ -49,7 +49,7 @@ class Dash(ttk.Frame):
             bootstyle="primary",
         ).pack(side=LEFT, fill=X, padx=15, pady=5)
 
-        self.network = ttk.IntVar()
+        self.data_var["network"] = ttk.BooleanVar()
         self.network_state_label = ttk.Label(
             master=header_container,
             font=("Noto Sans", 13),
@@ -97,10 +97,10 @@ class Dash(ttk.Frame):
         )
         status_evse_key_label.pack(**key_label_pack_params)
 
-        self.status_evse = ttk.StringVar()
+        self.data_var["status_evse"] = ttk.StringVar()
         status_evse_value_label = ttk.Label(
             master=status_evse_container,
-            textvariable=self.status_evse,
+            textvariable=self.data_var["status_evse"],
             width=value_label_width,
         )
         status_evse_value_label.pack(**value_label_pack_params)
@@ -114,10 +114,10 @@ class Dash(ttk.Frame):
         )
         reservation_id_key_label.pack(**key_label_pack_params)
 
-        self.reservation_id = ttk.IntVar()
+        self.data_var["reservation_id"] = ttk.IntVar()
         reservation_id_value_label = ttk.Label(
             master=reservation_id_container,
-            textvariable=self.reservation_id,
+            textvariable=self.data_var["reservation_id"],
             width=value_label_width,
         )
         reservation_id_value_label.pack(**value_label_pack_params)
@@ -138,10 +138,10 @@ class Dash(ttk.Frame):
         )
         active_power_key_label.pack(**key_label_pack_params)
 
-        self.active_power = ttk.IntVar()
+        self.data_var["active_power"] = ttk.IntVar()
         active_power_value_label = ttk.Label(
             master=active_power_container,
-            textvariable=self.active_power,
+            textvariable=self.data_var["active_power"],
             width=value_label_width,
         )
         active_power_value_label.pack(**value_label_pack_params)
@@ -155,10 +155,10 @@ class Dash(ttk.Frame):
         )
         power_factor_key_label.pack(**key_label_pack_params)
 
-        self.power_factor = ttk.IntVar()
+        self.data_var["power_factor"] = ttk.IntVar()
         power_factor_value_label = ttk.Label(
             master=power_factor_container,
-            textvariable=self.power_factor,
+            textvariable=self.data_var["power_factor"],
             width=value_label_width,
         )
         power_factor_value_label.pack(**value_label_pack_params)
@@ -178,10 +178,10 @@ class Dash(ttk.Frame):
         )
         offered_current_key_label.pack(**key_label_pack_params)
 
-        self.offered_current = ttk.DoubleVar()
+        self.data_var["offered_current"] = ttk.DoubleVar()
         offered_current_value_label = ttk.Label(
             master=offered_current_container,
-            textvariable=self.offered_current,
+            textvariable=self.data_var["offered_current"],
             width=value_label_width,
         )
         offered_current_value_label.pack(**value_label_pack_params)
@@ -195,10 +195,10 @@ class Dash(ttk.Frame):
         )
         meter_reading_key_label.pack(**key_label_pack_params)
 
-        self.meter_reading = ttk.IntVar()
+        self.data_var["meter_reading"] = ttk.IntVar()
         meter_reading_value_label = ttk.Label(
             master=meter_reading_container,
-            textvariable=self.meter_reading,
+            textvariable=self.data_var["meter_reading"],
             width=value_label_width,
         )
         meter_reading_value_label.pack(**value_label_pack_params)
@@ -213,14 +213,14 @@ class Dash(ttk.Frame):
         )
         id_tag_key_label.pack(**key_label_pack_params)
 
-        self.id_tag = ttk.StringVar()
+        self.data_var["id_tag"] = ttk.StringVar()
         id_tag_value_label = ttk.Label(
-            master=id_tag_container, textvariable=self.id_tag
+            master=id_tag_container, textvariable=self.data_var["id_tag"]
         )
         id_tag_value_label.pack(**value_label_pack_params)
 
         # This should be a visual indicator for powerloss occurence
-        self.powerloss = ttk.IntVar()
+        self.data_var["powerloss"] = ttk.BooleanVar()
         self.powerloss_container = ttk.Frame(master=ro_container)
         self.powerloss_container.pack(**ro_child_container_pack_params)
 
@@ -247,7 +247,7 @@ class Dash(ttk.Frame):
         slider_container.pack(side=TOP, padx=1, pady=1, fill=BOTH, expand=YES)
 
         # Voltage
-        self.voltage = ttk.IntVar()
+        self.data_var["voltage"] = ttk.IntVar()
         voltage_container = ttk.Frame(master=slider_container)
         voltage_container.pack(side=TOP, fill=X, expand=YES)
         voltage_label = ttk.Label(
@@ -256,7 +256,7 @@ class Dash(ttk.Frame):
         voltage_label.pack(side=LEFT, fill=X, padx=(5, 5))
         voltage_value_label = EditableLabel(
             master=voltage_container,
-            exposevariable=self.voltage,
+            exposevariable=self.data_var["voltage"],
             update_state=self.update_state,
             label_name="voltage",
             loglevel=loglevel,
@@ -266,7 +266,7 @@ class Dash(ttk.Frame):
 
         voltage_scale = ttk.Progressbar(
             master=voltage_container,
-            variable=self.voltage,
+            variable=self.data_var["voltage"],
             maximum=240,
             value=0,
             mode="determinate",
@@ -274,7 +274,7 @@ class Dash(ttk.Frame):
         voltage_scale.pack(side=RIGHT, padx=5, pady=15, fill=X, expand=YES)
 
         # current
-        self.current = ttk.IntVar()
+        self.data_var["current"] = ttk.IntVar()
         current_container = ttk.Frame(master=slider_container)
         current_container.pack(side=TOP, fill=X, expand=YES)
         current_label = ttk.Label(
@@ -284,7 +284,7 @@ class Dash(ttk.Frame):
 
         current_value_label = EditableLabel(
             master=current_container,
-            exposevariable=self.current,
+            exposevariable=self.data_var["current"],
             update_state=self.update_state,
             label_name="current",
             loglevel=loglevel,
@@ -294,12 +294,12 @@ class Dash(ttk.Frame):
         current_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
         current_scale = ttk.Progressbar(
-            master=current_container, variable=self.current, value=0, maximum=25
+            master=current_container, variable=self.data_var["current"], value=0, maximum=25
         )
         current_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
         # Frequency
-        self.frequency = ttk.IntVar()
+        self.data_var["frequency"] = ttk.IntVar()
         frequency_container = ttk.Frame(master=slider_container)
         frequency_container.pack(side=TOP, fill=X, expand=YES)
         frequency_label = ttk.Label(
@@ -309,7 +309,7 @@ class Dash(ttk.Frame):
 
         frequency_value_label = EditableLabel(
             master=frequency_container,
-            exposevariable=self.frequency,
+            exposevariable=self.data_var["frequency"],
             update_state=self.update_state,
             label_name="frequency",
             loglevel=loglevel,
@@ -319,12 +319,12 @@ class Dash(ttk.Frame):
         frequency_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
         frequency_scale = ttk.Progressbar(
-            master=frequency_container, variable=self.frequency, value=0, maximum=60
+            master=frequency_container, variable=self.data_var["frequency"], value=0, maximum=60
         )
         frequency_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
         # temperature
-        self.temperature = ttk.IntVar()
+        self.data_var["temperature"] = ttk.IntVar()
         temperature_container = ttk.Frame(master=slider_container)
         temperature_container.pack(side=TOP, fill=X, expand=YES)
         temperature_label = ttk.Label(
@@ -336,7 +336,7 @@ class Dash(ttk.Frame):
         temperature_label.pack(side=LEFT, fill=X, padx=(5, 5))
         temperature_value_label = EditableLabel(
             master=temperature_container,
-            exposevariable=self.temperature,
+            exposevariable=self.data_var["temperature"],
             update_state=self.update_state,
             label_name="temperature",
             loglevel=loglevel,
@@ -345,7 +345,7 @@ class Dash(ttk.Frame):
         temperature_value_label.pack(side=LEFT, fill=X, padx=(5, 5))
 
         temperature_scale = ttk.Progressbar(
-            master=temperature_container, variable=self.temperature, value=0, maximum=50
+            master=temperature_container, variable=self.data_var["temperature"], value=0, maximum=50
         )
         temperature_scale.pack(side=TOP, fill=X, padx=5, pady=15, expand=YES)
 
@@ -363,7 +363,7 @@ class Dash(ttk.Frame):
 
         gun_connected_container = ttk.Frame(master=rw_coupled_container)
         gun_connected_container.pack(side=LEFT, fill=X, expand=YES)
-        self.gun_connected = ttk.IntVar()
+        self.data_var["gun_connected"] = ttk.BooleanVar()
         self.gun_connection_toggle = ttk.Button(
             master=gun_connected_container,
             command=self.gun_connection_toggled,
@@ -375,11 +375,11 @@ class Dash(ttk.Frame):
         # Authorize Button
         self.authorization_state = False
 
-        self.send_or_stop = ttk.IntVar()
+        self.data_var["send_or_stop"] = ttk.BooleanVar()
         send_or_stop_container = ttk.Frame(master=rw_coupled_container)
         send_or_stop_container.pack(side=RIGHT, fill=X, expand=YES)
         self.send_or_stop_button = ttk.Button(
-            master=send_or_stop_container,
+           master=send_or_stop_container,
             text="Authorize",
             command=self.authorize,
             bootstyle="primary",
@@ -389,7 +389,7 @@ class Dash(ttk.Frame):
         # Emergency Stop: a button
         self.estop_state = False
 
-        self.estop = ttk.IntVar()
+        self.data_var["estop"] = ttk.BooleanVar()
         estop_container = ttk.Frame(master=rw_container)
         estop_container.pack(side=RIGHT, fill=X, expand=YES)
         dash_style.configure(
@@ -410,30 +410,30 @@ class Dash(ttk.Frame):
 
         self.update_from_file()
         # Initialize authorize button
-        if self.send_or_stop.get() == 0:
-            self.authorization_state = False
-            self.send_or_stop_button.configure(text="Authorize")
-            self.send_or_stop_button.configure(bootstyle="primary")
-        elif self.send_or_stop.get() == 1:
+        if self.data_var["send_or_stop"].get():
             self.authorization_state = True
             self.send_or_stop_button.configure(text="De-Authorize")
             self.send_or_stop_button.configure(bootstyle="success")
+        else:
+            self.authorization_state = False
+            self.send_or_stop_button.configure(text="Authorize")
+            self.send_or_stop_button.configure(bootstyle="primary")
 
         # Initialize gun connection button
-        if self.gun_connected.get() == 0:
-            self.gun_connection_toggle_state = False
-            self.gun_connection_toggle.configure(text="Connect Gun")
-        elif self.gun_connected.get() == 1:
+        if self.data_var["gun_connected"].get():
             self.gun_connection_toggle_state = True
             self.gun_connection_toggle.configure(text="Disconnect Gun")
+        else:
+            self.gun_connection_toggle_state = False
+            self.gun_connection_toggle.configure(text="Connect Gun")
 
         # Initialize emergency stop button
-        if self.estop.get() == 0:
-            self.estop_state = False
-            self.estop_button.configure(text="Emergency Stop")
-        elif self.estop.get() == 1:
+        if self.data_var["estop"].get():
             self.estop_state = True
             self.estop_button.configure(text="Release")
+        else:
+            self.estop_state = False
+            self.estop_button.configure(text="Emergency Stop")
 
         self.update_callback()
         self.update_job = self.after(self.refresh_rate, self.update_callback)
@@ -474,21 +474,24 @@ class Dash(ttk.Frame):
         return True
 
     def authorize(self):
+        """ Authorization method. Simple logic to hold authorization state
+        for the GUI and manipulate the GUI based on change in authorization state.
+        """
         if not self.authorization_state:
             if self.authorization_check():
                 self.send_or_stop_button.configure(text="De-Authorize")
                 self.send_or_stop_button.configure(bootstyle="success")
                 self.authorization_state = True
-                if self.send_or_stop.get() == 0:
-                    self.send_or_stop.set(1)
+                if not self.data_var["send_or_stop"].get():
+                    self.data_var["send_or_stop"].set(True)
                     self.update_state["Editing"] = "authorize"
                     self.update_state["Commit"] = "authorize"
         else:
             self.send_or_stop_button.configure(text="Authorize")
             self.send_or_stop_button.configure(bootstyle="primary")
             self.authorization_state = False
-            if self.send_or_stop.get() == 1:
-                self.send_or_stop.set(0)
+            if self.data_var["send_or_stop"].get():
+                self.data_var["send_or_stop"].set(False)
                 self.update_state["Editing"] = "authorize"
                 self.update_state["Commit"] = "authorize"
 
@@ -496,31 +499,33 @@ class Dash(ttk.Frame):
         """Callback for emergency stop button"""
         if not self.estop_state:
             self.estop_state = True
-            if self.estop.get() == 0:
-                self.estop.set(1)
+            if not self.data_var["estop"].get():
+                self.data_var["estop"].set(True)
                 self.estop_button.configure(text="Release")
                 self.update_state["Editing"] = "on_estop"
                 self.update_state["Commit"] = "on_estop"
         else:
             self.estop_state = False
-            if self.estop.get() == 1:
-                self.estop.set(0)
+            if self.data_var["estop"].get():
+                self.data_var["estop"].set(False)
                 self.estop_button.configure(text="Emergency Stop")
                 self.update_state["Editing"] = "on_estop"
                 self.update_state["Commit"] = "on_estop"
 
     def gun_connection_toggled(self):
+        """Callback for gun connection button
+        """
         if not self.gun_connection_toggle_state:
             self.gun_connection_toggle_state = True
-            if self.gun_connected.get() == 0:
-                self.gun_connected.set(1)
+            if not self.data_var["gun_connected"].get():
+                self.data_var["gun_connected"].set(True)
                 self.gun_connection_toggle.configure(text="Disconnect Gun")
                 self.update_state["Editing"] = "gun_connection_toggled"
                 self.update_state["Commit"] = "gun_connection_toggled"
         else:
             self.gun_connection_toggle_state = False
-            if self.gun_connected.get() == 1:
-                self.gun_connected.set(0)
+            if self.data_var["gun_connected"].get():
+                self.data_var["gun_connected"].set(False)
                 self.gun_connection_toggle.configure(text="Connect Gun")
                 self.update_state["Editing"] = "gun_connection_toggled"
                 self.update_state["Commit"] = "gun_connection_toggled"
@@ -528,22 +533,22 @@ class Dash(ttk.Frame):
     def on_copy(self):
         """Callback for copy button"""
         data = {}
-        data["status_evse"] = self.status_evse.get()
-        data["Gun_connected"] = self.gun_connected.get()
-        data["send_or_stop"] = self.send_or_stop.get()
-        data["Network"] = self.network.get()
-        data["Reservation_id"] = self.reservation_id.get()
-        data["Estop"] = self.estop.get()
-        data["Powerloss"] = self.powerloss.get()
-        data["Idtag"] = self.id_tag.get()
-        data["Voltage"] = self.voltage.get()
-        data["Current"] = self.current.get()
-        data["Active_Power"] = self.active_power.get()
-        data["Frequency"] = self.frequency.get()
-        data["Power_factor"] = self.power_factor.get()
-        data["Temperature"] = self.temperature.get()
-        data["offered_current"] = self.offered_current.get()
-        data["meter_reading"] = self.meter_reading.get()
+        data["status_evse"] = self.data_var["status_evse"].get()
+        data["Gun_connected"] = 1 if self.data_var["gun_connected"].get() else 0
+        data["send_or_stop"] = 1 if self.data_var["send_or_stop"].get() else 0
+        data["Network"] = 1 if self.data_var["network"].get() else 0
+        data["Reservation_id"] = self.data_var["reservation_id"].get()
+        data["Estop"] = 1 if self.data_var["estop"].get() else 0
+        data["Powerloss"] = 1 if self.data_var["powerloss"] .get() else 0
+        data["Idtag"] = self.data_var["id_tag"].get()
+        data["Voltage"] = self.data_var["voltage"].get()
+        data["Current"] = self.data_var["current"].get()
+        data["Active_Power"] = self.data_var["active_power"].get()
+        data["Frequency"] = self.data_var["frequency"].get()
+        data["Power_factor"] = self.data_var["power_factor"].get()
+        data["Temperature"] = self.data_var["temperature"].get()
+        data["offered_current"] = self.data_var["offered_current"].get()
+        data["meter_reading"] = self.data_var["meter_reading"].get()
         pyperclip.copy(json.dumps(data, indent=4))
 
     def on_save(self):
@@ -551,22 +556,22 @@ class Dash(ttk.Frame):
         based on changes in the GUI
         """
         data = {}
-        data["status_evse"] = self.status_evse.get()
-        data["Gun_connected"] = self.gun_connected.get()
-        data["send_or_stop"] = self.send_or_stop.get()
-        data["Network"] = self.network.get()
-        data["Reservation_id"] = self.reservation_id.get()
-        data["Estop"] = self.estop.get()
-        data["Powerloss"] = self.powerloss.get()
-        data["Idtag"] = self.id_tag.get()
-        data["Voltage"] = self.voltage.get()
-        data["Current"] = self.current.get()
-        data["Active_Power"] = self.active_power.get()
-        data["Frequency"] = self.frequency.get()
-        data["Power_factor"] = self.power_factor.get()
-        data["Temperature"] = self.temperature.get()
-        data["offered_current"] = self.offered_current.get()
-        data["meter_reading"] = self.meter_reading.get()
+        data["status_evse"] = self.data_var["status_evse"].get()
+        data["Gun_connected"] = 1 if self.data_var["gun_connected"].get() else 0
+        data["send_or_stop"] = 1 if self.data_var["send_or_stop"].get() else 0
+        data["Network"] = 1 if self.data_var["network"].get() else 0
+        data["Reservation_id"] = self.data_var["reservation_id"].get()
+        data["Estop"] = 1 if self.data_var["estop"].get() else 0
+        data["Powerloss"] = 1 if self.data_var["powerloss"].get() else 0
+        data["Idtag"] = self.data_var["id_tag"].get()
+        data["Voltage"] = self.data_var["voltage"].get()
+        data["Current"] = self.data_var["current"].get()
+        data["Active_Power"] = self.data_var["active_power"].get()
+        data["Frequency"] = self.data_var["frequency"].get()
+        data["Power_factor"] = self.data_var["power_factor"].get()
+        data["Temperature"] = self.data_var["temperature"].get()
+        data["offered_current"] = self.data_var["offered_current"].get()
+        data["meter_reading"] = self.data_var["meter_reading"].get()
 
         with open(self.json_file, "w", encoding="utf-8") as json_file_write:
             self.logger.info("Commiting to file: %s", json.dumps(data, indent=4))
@@ -583,37 +588,41 @@ class Dash(ttk.Frame):
         with open(self.json_file, "r", encoding="utf-8") as json_fp:
             data = json.load(json_fp)
 
-            self.network.set(data["Network"])
-            if data["Network"] == 0:
-                self.network_state_label.configure(text="Offline")
-                self.network_state_label.configure(bootstyle="danger")
-            elif data["Network"] == 1:
+            self.data_var["network"].set(data["Network"] == 1)
+            if self.data_var["network"].get():
+                self.logger.info("Network status changed to: Online")
                 self.network_state_label.configure(text="Online")
                 self.network_state_label.configure(bootstyle="success")
+            else:
+                self.logger.error("Network status changed to: Offline")
+                self.network_state_label.configure(text="Offline")
+                self.network_state_label.configure(bootstyle="danger")
 
-            self.status_evse.set(data["status_evse"])
-            self.gun_connected.set(data["Gun_connected"])
-            self.send_or_stop.set(data["send_or_stop"])
-            self.reservation_id.set(data["Reservation_id"])
-            self.offered_current.set(data["offered_current"])
-            self.meter_reading.set(data["meter_reading"])
-            self.estop.set(data["Estop"])
+            self.data_var["status_evse"].set(data["status_evse"])
+            self.data_var["gun_connected"].set(data["Gun_connected"] != 0)
+            self.data_var["send_or_stop"].set(data["send_or_stop"] != 0)
+            self.data_var["reservation_id"].set(data["Reservation_id"])
+            self.data_var["offered_current"].set(data["offered_current"])
+            self.data_var["meter_reading"].set(data["meter_reading"])
+            self.data_var["estop"].set(data["Estop"] != 0)
 
             # Power Loss Indicator
-            self.powerloss.set(data["Powerloss"])
-            if data["Powerloss"] == 0:
+            self.data_var["powerloss"].set(data["Powerloss"] != 0)
+            if self.data_var["powerloss"].get():
+                self.logger.error("Experiencing a Power loss")
+                self.powerloss_container.pack(side=LEFT, fill=X, expand=YES)
+            else:
                 if self.powerloss_container.winfo_manager():
                     self.powerloss_container.pack_forget()
-            elif data["Powerloss"] == 1:
-                self.powerloss_container.pack(side=LEFT, fill=X, expand=YES)
+                    self.logger.error("No Power loss")
 
-            self.id_tag.set(data["Idtag"])
-            self.voltage.set(data["Voltage"])
-            self.current.set(data["Current"])
-            self.active_power.set(data["Active_Power"])
-            self.frequency.set(data["Frequency"])
-            self.power_factor.set(data["Power_factor"])
-            self.temperature.set(data["Temperature"])
+            self.data_var["id_tag"].set(data["Idtag"])
+            self.data_var["voltage"].set(data["Voltage"])
+            self.data_var["current"].set(data["Current"])
+            self.data_var["active_power"].set(data["Active_Power"])
+            self.data_var["frequency"].set(data["Frequency"])
+            self.data_var["power_factor"].set(data["Power_factor"])
+            self.data_var["temperature"].set(data["Temperature"])
 
     def update_callback(self):
         """A wrapper around update_from_file which acts as the GUI periodical callback
