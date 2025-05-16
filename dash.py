@@ -214,8 +214,13 @@ class Dash(ttk.Frame):
         id_tag_key_label.pack(**key_label_pack_params)
 
         self.data_var["id_tag"] = ttk.StringVar()
-        id_tag_value_label = ttk.Label(
-            master=id_tag_container, textvariable=self.data_var["id_tag"]
+        id_tag_value_label = EditableLabel(
+            master=id_tag_container,
+            exposevariable=self.data_var["id_tag"],
+            update_state=self.update_state,
+            label_name="Idtag",
+            loglevel=loglevel,
+            width=20,
         )
         id_tag_value_label.pack(**value_label_pack_params)
 
